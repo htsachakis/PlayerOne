@@ -549,8 +549,14 @@ Not implemented, in rough order of usefulness:
 - Picture-in-picture and always-on-top
 - A shortcut editor, and a light theme
 
-## Licence and third-party software
+## Licence
 
-PlayerOne bundles mpv and ffmpeg, which are GPL. See
-[docs/third-party.md](docs/third-party.md) for what that means if you
-redistribute a build, and where the corresponding sources are.
+PlayerOne's own source is **[MIT](LICENSE)** — use it, modify it, ship it,
+commercially or not, keeping the copyright notice.
+
+The release packages additionally bundle **mpv** and **ffmpeg**, which are GPL.
+They are separate programs that PlayerOne runs as child processes; no GPL code
+is linked into PlayerOne, which is why its own source can be MIT. If you
+redistribute a package containing those binaries, their GPL obligations travel
+with them — see [docs/third-party.md](docs/third-party.md) for what that means
+and where the corresponding sources are.

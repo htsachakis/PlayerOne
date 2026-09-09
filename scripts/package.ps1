@@ -62,6 +62,7 @@ try {
 
     Copy-Item build/bin/PlayerOne.exe $stage
     Copy-Item README.md $stage
+    Copy-Item LICENSE $stage
     Copy-Item docs/third-party.md "$stage/THIRD-PARTY.md"
 
     # The engine travels with the executable: PlayerOne looks in bin/ beside

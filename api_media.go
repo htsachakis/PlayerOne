@@ -249,6 +249,8 @@ func (a *App) HandleDrop(paths []string) error {
 		return nil
 	}
 
+	a.log.Info("app: %d dropped item(s): %v", len(paths), paths)
+
 	var videos []string
 	var subtitle string
 	var folders []string

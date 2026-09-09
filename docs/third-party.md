@@ -34,7 +34,9 @@ the binaries were built from:
 `scripts/fetch-tools.ps1` downloads exactly these binaries and prints their
 versions, so the release always matches a published upstream build.
 
-PlayerOne's own source is in this repository.
+PlayerOne's own source is in this repository, under the MIT licence (see
+`LICENSE`). It links no GPL code — mpv and ffmpeg are invoked as separate
+programs — which is what allows the two licences to sit side by side.
 
 ## Building without bundling
 

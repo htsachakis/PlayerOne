@@ -66,7 +66,7 @@ func main() {
 		OnStartup: func(ctx context.Context) {
 			app.startup(ctx)
 			restoreWindowPosition(ctx, geometry)
-			registerFileDrop(ctx, app)
+			openCommandLineTarget(app)
 		},
 		OnDomReady:  app.domReady,
 		OnBeforeClose: func(ctx context.Context) bool {
@@ -168,17 +168,13 @@ func saveWindowGeometry(ctx context.Context, app *App) {
 	app.SaveWindowState(width, height, x, y, false)
 }
 
-// registerFileDrop wires Wails' native drop handling to the application.
-func registerFileDrop(ctx context.Context, app *App) {
-	wailsruntime.OnFileDrop(ctx, func(_, _ int, paths []string) {
-		if err := app.HandleDrop(paths); err != nil {
-			app.log.Warn("app: dropped files were not accepted: %v", err)
-			app.emit(eventError, err.Error())
-		}
-	})
-
-	// A file or folder passed on the command line opens once the engine is
-	// ready, which is what makes "Open with PlayerOne" work from Explorer.
+// openCommandLineTarget opens a file or folder given on the command line, which
+// is what makes "Open with PlayerOne" work from Explorer.
+//
+// Drops are not handled here. Wails delivers them to the interface, which calls
+// HandleDrop; subscribing on this side as well would open every dropped file
+// twice.
+func openCommandLineTarget(app *App) {
 	if path := commandLineTarget(); path != "" {
 		go openWhenReady(app, path)
 	}
