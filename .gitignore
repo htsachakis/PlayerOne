@@ -34,7 +34,13 @@ go.work.sum
 # --- PlayerOne ---
 # Wails / frontend build output
 build/bin
-frontend/dist
+# The contents rather than the directory: git will not descend into an
+# excluded directory, so a negation inside one can never take effect. Ignoring
+# the contents leaves the placeholder below trackable.
+frontend/dist/*
+# The placeholder keeps the directory present, so //go:embed in main.go
+# compiles on a fresh clone before anything has been built.
+!frontend/dist/.gitkeep
 frontend/node_modules
 node_modules
 

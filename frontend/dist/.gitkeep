@@ -1,0 +1,2 @@
+# Keeps this directory present for //go:embed in main.go.
+# Everything else here is build output and is gitignored.

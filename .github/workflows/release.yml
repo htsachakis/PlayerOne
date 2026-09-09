@@ -72,17 +72,21 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: ./scripts/fetch-tools.ps1
 
+      # Before the Go tests, not after: the root package embeds frontend/dist
+      # with //go:embed, and that fails to compile when the directory is
+      # absent - which it is on a fresh checkout, since it is build output.
+      # `npm run build` type-checks with tsc and then bundles.
+      - name: Build the frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
       - name: Run the Go tests
         run: go test ./...
 
       - name: Vet
         run: go vet ./...
-
-      - name: Type-check the frontend
-        working-directory: frontend
-        run: |
-          npm ci
-          npx tsc --noEmit
 
       - name: Build the application and installer
         shell: pwsh
