@@ -1,0 +1,558 @@
+/* The control bar and the drawer that opens above it. */
+
+.controls {
+  flex: none;
+  padding: var(--space-2) var(--space-3) var(--space-3);
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+}
+
+/* --- Timeline --- */
+
+.timeline {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-1) 0 var(--space-2);
+}
+
+.time-current,
+.time-total {
+  flex: none;
+  min-width: 6ch;
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.time-total {
+  text-align: right;
+}
+
+.timeline-track {
+  position: relative;
+  flex: 1;
+  height: 20px;
+  cursor: pointer;
+  touch-action: none;
+}
+
+.timeline-rail,
+.timeline-played {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.timeline-rail {
+  right: 0;
+  background: var(--border-strong);
+}
+
+.timeline-played {
+  width: 0;
+  background: var(--accent);
+}
+
+.timeline-marks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* One tick per chapter, so the structure of a long tutorial is visible at a
+   glance without opening the panel. */
+.timeline-mark {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 10px;
+  transform: translate(-1px, -50%);
+  background: var(--bg);
+  opacity: 0.85;
+}
+
+.timeline-handle {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: 13px;
+  height: 13px;
+  margin-left: -6.5px;
+  transform: translateY(-50%) scale(0.6);
+  background: var(--accent);
+  border-radius: 50%;
+  pointer-events: none;
+  transition: transform var(--transition);
+}
+
+.timeline-track:hover .timeline-handle,
+.timeline-track:active .timeline-handle {
+  transform: translateY(-50%) scale(1);
+}
+
+.timeline-track:hover .timeline-rail,
+.timeline-track:active .timeline-rail,
+.timeline-track:hover .timeline-played,
+.timeline-track:active .timeline-played {
+  height: 6px;
+}
+
+.timeline-tooltip {
+  position: absolute;
+  bottom: 22px;
+  transform: translateX(-50%);
+  max-width: 320px;
+  padding: 4px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  pointer-events: none;
+  box-shadow: var(--shadow);
+}
+
+/* --- Buttons --- */
+
+.controls-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.controls-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  min-width: 0;
+}
+
+.ctl-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--control-height);
+  min-width: var(--control-height);
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  transition: background var(--transition), color var(--transition);
+}
+
+.ctl-button:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.ctl-button.active {
+  color: var(--accent);
+}
+
+.ctl-button.open {
+  background: var(--surface-active);
+  color: var(--text);
+}
+
+.ctl-labelled {
+  padding: 0 10px;
+}
+
+.ctl-label {
+  max-width: 14ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.volume {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* The slider stays narrow until the group is hovered, so the bar is not
+   dominated by a control that is adjusted occasionally. */
+.volume-slider {
+  width: 0;
+  opacity: 0;
+  appearance: none;
+  height: 4px;
+  background: var(--border-strong);
+  border-radius: 2px;
+  transition: width var(--transition), opacity var(--transition);
+}
+
+.volume:hover .volume-slider,
+.volume-slider:focus-visible {
+  width: 90px;
+  opacity: 1;
+}
+
+.volume-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--text);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* --- Drawer --- */
+
+/*
+ * Menus open here, between the video and the controls. Opening one shrinks the
+ * video area rather than covering it, which is the only way a menu can be
+ * visible at all given that mpv's window sits above the page.
+ */
+.drawer {
+  flex: none;
+  max-height: 42vh;
+  overflow: auto;
+  background: var(--panel);
+  border-top: 1px solid var(--border);
+}
+
+.drawer-body {
+  padding: var(--space-3);
+}
+
+.menu {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+}
+
+.menu-header h3 {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-dim);
+}
+
+.menu-close {
+  display: inline-flex;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+}
+
+.menu-close:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.menu-options {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 4px;
+}
+
+.menu-option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  color: var(--text-dim);
+  transition: background var(--transition), color var(--transition);
+}
+
+.menu-option:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.menu-option.selected {
+  color: var(--text);
+  background: var(--surface);
+}
+
+.menu-check {
+  display: inline-flex;
+  width: 18px;
+  flex: none;
+  color: var(--accent);
+}
+
+.menu-check .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.menu-option-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-empty,
+.menu-note {
+  margin: var(--space-2) 0 0;
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.menu-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.menu-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.menu-action:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+/* --- Delay stepper --- */
+
+.delay-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.delay-label {
+  margin-right: 2px;
+}
+
+.delay-button {
+  width: 26px;
+  height: 26px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1;
+}
+
+.delay-button:hover {
+  background: var(--surface-hover);
+}
+
+.delay-value {
+  min-width: 5ch;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  color: var(--text);
+}
+
+.delay-reset {
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+.delay-reset:hover {
+  color: var(--text);
+  background: var(--surface);
+}
+
+/* --- Settings rows --- */
+
+.settings-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.settings-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.checkbox-row {
+  cursor: pointer;
+}
+
+.checkbox-row input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.settings-select {
+  padding: 5px 8px;
+  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+}
+
+/* --- Resume prompt --- */
+
+.resume-menu {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.resume-text {
+  flex: 1;
+  min-width: 240px;
+}
+
+.resume-title {
+  margin: 0;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resume-detail {
+  margin: 2px 0 0;
+  color: var(--text-dim);
+  font-size: 13px;
+}
+
+.resume-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.primary-button {
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.primary-button:hover {
+  background: #5bb5ff;
+}
+
+.secondary-button {
+  padding: 9px 16px;
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--text);
+}
+
+.secondary-button:hover {
+  background: var(--surface-hover);
+}
+
+/* --- Recent files --- */
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-height: 30vh;
+  overflow: auto;
+}
+
+.recent-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-sm);
+}
+
+.recent-row:hover {
+  background: var(--surface);
+}
+
+.recent-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 8px 10px;
+  text-align: left;
+}
+
+.recent-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.recent-meta {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+/* A file that has moved is greyed out rather than removed: an unplugged drive
+   is not the same as a file the viewer finished with. */
+.recent-row.missing .recent-name {
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+
+.recent-forget {
+  flex: none;
+  display: inline-flex;
+  padding: 6px;
+  margin-right: 4px;
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+  opacity: 0;
+}
+
+.recent-row:hover .recent-forget {
+  opacity: 1;
+}
+
+.recent-forget:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.recent-forget .icon {
+  width: 14px;
+  height: 14px;
+}

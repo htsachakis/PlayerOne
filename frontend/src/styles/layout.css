@@ -1,0 +1,268 @@
+/*
+ * The application shell.
+ *
+ * A vertical stack of full-width strips, with the video and side panel side by
+ * side in the middle. Nothing is ever positioned over the video area: mpv draws
+ * into a native window there, which HTML cannot cover. Menus and prompts expand
+ * the strips instead, and the video shrinks to make room.
+ */
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--bg);
+}
+
+.topbar-wrap {
+  flex: none;
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  height: var(--topbar-height);
+  padding: 0 var(--space-3);
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex: none;
+}
+
+.brand-name {
+  font-weight: 650;
+  letter-spacing: 0.01em;
+}
+
+.now-playing {
+  flex: 1;
+  min-width: 0;
+}
+
+.now-playing-title {
+  display: block;
+  color: var(--text-dim);
+  font-size: 13px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  flex: none;
+}
+
+.topbar-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  transition: background var(--transition), color var(--transition);
+}
+
+.topbar-button:hover:not(:disabled) {
+  background: var(--surface);
+  color: var(--text);
+}
+
+/* The error banner pushes the layout down rather than floating over it. */
+.banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 10px var(--space-3);
+  background: var(--danger-surface);
+  border-bottom: 1px solid var(--danger);
+  color: #ffd9d4;
+  font-size: 13px;
+}
+
+.banner-icon {
+  flex: none;
+}
+
+.banner-text {
+  flex: 1;
+  min-width: 0;
+  white-space: pre-wrap;
+}
+
+.banner-dismiss {
+  flex: none;
+  display: inline-flex;
+  padding: 4px;
+  border-radius: var(--radius-sm);
+  color: inherit;
+  opacity: 0.75;
+}
+
+.banner-dismiss:hover {
+  opacity: 1;
+  background: rgb(255 255 255 / 10%);
+}
+
+/* --- Stage: video beside the panel --- */
+
+.stage {
+  flex: 1;
+  display: flex;
+  min-height: 0;
+}
+
+.video-area {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  background: #000;
+}
+
+.video-slot {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  background: #000;
+}
+
+/*
+ * Shown only while the native video window is hidden. It can never appear over
+ * playing video, which is why every transient message lives in the strips
+ * outside this area instead.
+ */
+.video-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-5);
+  background: var(--bg);
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: 620px;
+  text-align: center;
+  color: var(--text-dim);
+}
+
+.empty-logo {
+  color: var(--text-faint);
+}
+
+.empty-icon {
+  font-size: 40px;
+  line-height: 1;
+}
+
+.empty-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.empty-detail {
+  margin: 0;
+  font-size: 13px;
+  white-space: pre-wrap;
+  text-align: left;
+}
+
+.error-state .empty-detail {
+  max-height: 40vh;
+  overflow: auto;
+  padding: var(--space-3);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-dim);
+  user-select: text;
+}
+
+.empty-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-faint);
+  max-width: 46ch;
+}
+
+/* --- Panel resize handle --- */
+
+.panel-resize {
+  flex: none;
+  width: 5px;
+  cursor: col-resize;
+  background: var(--border);
+  transition: background var(--transition);
+}
+
+.panel-resize:hover,
+.panel-resize.dragging {
+  background: var(--accent-dim);
+}
+
+/* --- Fullscreen --- */
+
+.shell.fullscreen .topbar-wrap {
+  display: none;
+}
+
+/*
+ * The side panel stays in fullscreen, showing whatever the user chose. Hiding it
+ * automatically would take away chapters and the transcript at exactly the point
+ * where the video is largest and following along matters most; pressing P still
+ * gives the video the full width.
+ */
+
+/*
+ * Auto-hiding the controls grows the video rectangle. The video surface's
+ * ResizeObserver picks the change up and moves the native window, so there is
+ * no overlay and nothing to fade.
+ */
+.shell.fullscreen.controls-hidden .controls {
+  display: none;
+}
+
+/* --- Drag and drop feedback --- */
+
+#app.drop-active .video-placeholder {
+  outline: 2px dashed var(--accent);
+  outline-offset: -12px;
+}
+
+#app.drop-active .stage::after {
+  content: 'Drop a video or subtitle file';
+  position: absolute;
+  left: 50%;
+  bottom: 96px;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 13px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+#app {
+  position: relative;
+}

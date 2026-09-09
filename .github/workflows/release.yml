@@ -1,0 +1,155 @@
+# Builds and publishes a PlayerOne release.
+#
+# Push a version tag to cut a release:
+#
+#     git tag v1.0.0
+#     git push origin v1.0.0
+#
+# The workflow produces two downloads and attaches them to a GitHub Release:
+#
+#   PlayerOne-<version>-windows-amd64-portable.zip   unzip and run, nothing to install
+#   PlayerOne-<version>-windows-amd64-installer.exe  Start menu and desktop shortcuts
+#
+# Both bundle mpv and ffmpeg, so neither needs anything installed on the target
+# machine beyond the WebView2 runtime, which Windows 11 already has.
+
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  # Available manually so the build can be exercised without cutting a release.
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build Windows release
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out the source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          # Taken from go.mod so the workflow cannot drift from the toolchain
+          # the project actually needs (Wails v2.14 requires Go 1.25).
+          go-version-file: go.mod
+          cache: true
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Work out the version
+        id: version
+        shell: pwsh
+        run: |
+          # A tagged build takes its version from the tag; a manual run is
+          # labelled by commit so the artifacts are still identifiable.
+          if ($env:GITHUB_REF -like 'refs/tags/v*') {
+            $version = $env:GITHUB_REF -replace '^refs/tags/v', ''
+          } else {
+            $version = "0.0.0-$($env:GITHUB_SHA.Substring(0,7))"
+          }
+          "version=$version" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
+          Write-Host "Building version $version"
+
+      - name: Install the Wails CLI
+        run: go install github.com/wailsapp/wails/v2/cmd/wails@v2.14.0
+
+      - name: Fetch mpv and ffmpeg
+        shell: pwsh
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: ./scripts/fetch-tools.ps1
+
+      - name: Run the Go tests
+        run: go test ./...
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Type-check the frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npx tsc --noEmit
+
+      - name: Build the application and installer
+        shell: pwsh
+        run: |
+          # NSIS ships on the Windows runner but is not on PATH by default.
+          $nsis = 'C:\Program Files (x86)\NSIS'
+          if (Test-Path $nsis) { $env:PATH = "$nsis;$env:PATH" }
+
+          wails build -platform windows/amd64 -clean -nsis `
+            -ldflags "-X main.version=${{ steps.version.outputs.version }}"
+
+      - name: Assemble the portable package
+        shell: pwsh
+        run: |
+          $version = '${{ steps.version.outputs.version }}'
+          $stage = "dist/PlayerOne-$version-windows-amd64"
+
+          New-Item -ItemType Directory -Force -Path "$stage/bin" | Out-Null
+
+          Copy-Item build/bin/PlayerOne.exe $stage
+          Copy-Item README.md $stage
+          Copy-Item docs/third-party.md "$stage/THIRD-PARTY.md"
+
+          # The media engine travels with the executable: PlayerOne looks in
+          # bin/ beside itself before falling back to PATH.
+          Copy-Item bin/mpv.exe, bin/ffmpeg.exe, bin/ffprobe.exe "$stage/bin"
+          if (Test-Path bin/d3dcompiler_43.dll) {
+            Copy-Item bin/d3dcompiler_43.dll "$stage/bin"
+          }
+
+          Compress-Archive -Path "$stage/*" -DestinationPath "dist/PlayerOne-$version-windows-amd64-portable.zip"
+
+          # The installer is named by Wails; give it the release name.
+          $installer = Get-ChildItem build/bin -Filter '*installer.exe' | Select-Object -First 1
+          if ($installer) {
+            Move-Item $installer.FullName "dist/PlayerOne-$version-windows-amd64-installer.exe"
+          }
+
+          Get-ChildItem dist -File | ForEach-Object { '{0,-60} {1,12:N0} bytes' -f $_.Name, $_.Length }
+
+      - name: Upload the build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PlayerOne-${{ steps.version.outputs.version }}-windows-amd64
+          path: dist/*
+          retention-days: 14
+
+      - name: Publish the release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          draft: false
+          generate_release_notes: true
+          body: |
+            ## PlayerOne ${{ steps.version.outputs.version }}
+
+            ### Downloads
+
+            | File | Use it when |
+            |---|---|
+            | `PlayerOne-${{ steps.version.outputs.version }}-windows-amd64-installer.exe` | You want Start menu and desktop shortcuts. |
+            | `PlayerOne-${{ steps.version.outputs.version }}-windows-amd64-portable.zip` | You want to unzip and run, or carry it on a USB stick. |
+
+            Both bundle mpv and ffmpeg. Windows 11 x64; nothing else to install.
+
+            Settings, watch history and the playlist are stored in
+            `%APPDATA%\PlayerOne` and are kept when you uninstall.
+
+            Third-party licences: see `THIRD-PARTY.md` in the download.

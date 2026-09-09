@@ -1,0 +1,477 @@
+/* The "In this video" side panel and its three tabs. */
+
+.side-panel {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  width: 380px;
+  min-width: 260px;
+  max-width: 900px;
+  background: var(--panel);
+  border-left: 1px solid var(--border);
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3) var(--space-2);
+}
+
+.panel-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.panel-close {
+  display: inline-flex;
+  padding: 5px;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+}
+
+.panel-close:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.panel-tabs {
+  display: flex;
+  gap: var(--space-1);
+  padding: 0 var(--space-3) var(--space-2);
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-tab {
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-dim);
+  font-size: 13px;
+  transition: background var(--transition), color var(--transition);
+}
+
+.panel-tab:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.panel-tab.active {
+  background: var(--text);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.panel-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+
+.panel-tab-content {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- Search --- */
+
+.panel-search {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-search-input {
+  flex: 1;
+  min-width: 0;
+  padding: 7px 10px;
+  background: var(--surface);
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  user-select: text;
+}
+
+.panel-search-input:focus {
+  border-color: var(--border-strong);
+  outline: none;
+}
+
+.panel-search-input::placeholder {
+  color: var(--text-faint);
+}
+
+.follow-button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--text-faint);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.follow-button .icon {
+  width: 14px;
+  height: 14px;
+  opacity: 0.35;
+}
+
+.follow-button.active {
+  color: var(--text);
+}
+
+.follow-button.active .icon {
+  color: var(--accent);
+  opacity: 1;
+}
+
+.follow-button:hover {
+  background: var(--surface-hover);
+}
+
+/* --- Empty and loading states --- */
+
+.panel-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-5) var(--space-4);
+  text-align: center;
+}
+
+.panel-empty-title {
+  margin: 0;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.panel-empty-detail {
+  margin: 0;
+  color: var(--text-faint);
+  font-size: 12.5px;
+  max-width: 42ch;
+}
+
+/* --- Chapters --- */
+
+.chapter-list,
+.transcript-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-2) var(--space-2) var(--space-5);
+}
+
+.chapter-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  border-left: 3px solid transparent;
+  transition: background var(--transition);
+}
+
+.chapter-row:hover {
+  background: var(--surface);
+}
+
+.chapter-row.active {
+  background: var(--surface);
+  border-left-color: var(--accent);
+}
+
+.chapter-time {
+  flex: none;
+  min-width: 5.5ch;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  font-size: 12.5px;
+}
+
+.chapter-row.active .chapter-time {
+  font-weight: 600;
+}
+
+.chapter-title {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-dim);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.chapter-row:hover .chapter-title,
+.chapter-row.active .chapter-title {
+  color: var(--text);
+}
+
+/* --- Transcript --- */
+
+.transcript-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  width: 100%;
+  padding: 7px 10px;
+  border-radius: var(--radius-sm);
+  text-align: left;
+  border-left: 3px solid transparent;
+  transition: background var(--transition);
+}
+
+.transcript-row:hover {
+  background: var(--surface);
+}
+
+.transcript-row.active {
+  background: var(--surface);
+  border-left-color: var(--accent);
+}
+
+.transcript-time {
+  flex: none;
+  min-width: 5.5ch;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+  font-size: 12px;
+}
+
+.transcript-row.active .transcript-time {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.transcript-text {
+  flex: 1;
+  min-width: 0;
+  color: var(--text-dim);
+  font-size: 13.5px;
+  line-height: 1.5;
+  /* Transcript lines are worth copying out of. */
+  user-select: text;
+}
+
+.transcript-row:hover .transcript-text,
+.transcript-row.active .transcript-text {
+  color: var(--text);
+}
+
+/* --- Info --- */
+
+.info-tab {
+  overflow-y: auto;
+  padding: var(--space-3);
+  gap: var(--space-4);
+  user-select: text;
+}
+
+.info-section {
+  margin-bottom: var(--space-4);
+}
+
+.info-heading {
+  margin: 0 0 var(--space-2);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-faint);
+}
+
+.info-rows {
+  margin: 0;
+  display: grid;
+  grid-template-columns: minmax(80px, 34%) 1fr;
+  gap: 5px var(--space-3);
+  font-size: 13px;
+}
+
+.info-row {
+  display: contents;
+}
+
+.info-row dt {
+  color: var(--text-faint);
+}
+
+.info-row dd {
+  margin: 0;
+  color: var(--text-dim);
+  overflow-wrap: anywhere;
+}
+
+.info-row.indented dt {
+  padding-left: var(--space-3);
+}
+
+.info-note {
+  margin: 0;
+  font-size: 12.5px;
+  color: var(--text-faint);
+}
+
+/* --- Playlist --- */
+
+.playlist-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.playlist-spacer {
+  flex: 1;
+}
+
+.playlist-count {
+  margin-right: var(--space-2);
+  color: var(--text-faint);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.playlist-tool {
+  display: inline-flex;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-dim);
+  transition: background var(--transition), color var(--transition);
+}
+
+.playlist-tool:hover {
+  background: var(--surface);
+  color: var(--text);
+}
+
+.playlist-tool.active {
+  color: var(--accent);
+}
+
+.playlist-tool .icon {
+  width: 17px;
+  height: 17px;
+}
+
+.playlist-list {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-2) var(--space-2) var(--space-5);
+}
+
+.playlist-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  border-radius: var(--radius-sm);
+  border-left: 3px solid transparent;
+}
+
+.playlist-row:hover {
+  background: var(--surface);
+}
+
+.playlist-row.current {
+  background: var(--surface);
+  border-left-color: var(--accent);
+}
+
+.playlist-index {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  color: var(--text-faint);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.playlist-row.current .playlist-index {
+  color: var(--accent);
+}
+
+.playlist-index .icon {
+  width: 13px;
+  height: 13px;
+}
+
+.playlist-open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  padding: 8px 4px;
+  text-align: left;
+}
+
+.playlist-name {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-dim);
+  font-size: 13.5px;
+}
+
+.playlist-row:hover .playlist-name,
+.playlist-row.current .playlist-name {
+  color: var(--text);
+}
+
+.playlist-meta {
+  color: var(--text-faint);
+  font-size: 12px;
+}
+
+/* A queued file that has moved is greyed rather than dropped: an unplugged
+   drive is not the same as a file the viewer removed. */
+.playlist-row.missing .playlist-name {
+  color: var(--text-faint);
+  text-decoration: line-through;
+}
+
+.playlist-remove {
+  flex: none;
+  display: inline-flex;
+  padding: 6px;
+  margin-right: 4px;
+  border-radius: var(--radius-sm);
+  color: var(--text-faint);
+  opacity: 0;
+}
+
+.playlist-row:hover .playlist-remove {
+  opacity: 1;
+}
+
+.playlist-remove:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.playlist-remove .icon {
+  width: 14px;
+  height: 14px;
+}

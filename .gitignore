@@ -30,3 +30,21 @@ go.work.sum
 # Editor/IDE
 # .idea/
 # .vscode/
+
+# --- PlayerOne ---
+# Wails / frontend build output
+build/bin
+frontend/dist
+frontend/node_modules
+node_modules
+
+# Bundled external tools (mpv / ffmpeg), fetched by scripts/fetch-tools.ps1.
+# Anchored to the repository root so it cannot swallow an unrelated bin folder.
+/bin/
+
+# Local test media - large files, never pushed. See the README for what to put
+# here; the tests skip cleanly when it is empty.
+/testdata/media/
+
+# Packaged output from scripts/package.ps1
+/dist/
