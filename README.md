@@ -524,6 +524,9 @@ go test -race ./...
 cd frontend && npx tsc --noEmit
 ```
 
+For anything a test cannot reach — a real window, a real GPU, a real pointer —
+there is a manual checklist in [docs/testing.md](docs/testing.md).
+
 Tests cover SRT and WebVTT parsing, subtitle tag cleaning, timestamp formatting,
 settings and history persistence, playlist ordering with shuffle and repeat,
 tool resolution, mpv's IPC protocol against a scripted server, and track

@@ -55,6 +55,13 @@ func mpvArgs(cfg Config, pipeName string) []string {
 		"--sub-auto=fuzzy",
 		"--audio-file-auto=fuzzy",
 
+		// The video is a native window, so a file dropped on it never reaches
+		// the WebView and Wails cannot see it. mpv accepts the drop instead;
+		// "replace" rather than "append" keeps it to one file at a time, which
+		// is the model the rest of the application works to. The backend
+		// notices the unexpected file and reconciles history and the playlist.
+		"--drag-and-drop=replace",
+
 		// Let mpv choose the decoder. auto-safe avoids hardware paths known to
 		// be broken, which is what makes one build work across NVIDIA, AMD and
 		// Intel without per-vendor special cases.

@@ -48,6 +48,18 @@
   --transition: 120ms ease;
 
   color-scheme: dark;
+
+  /*
+   * Wails only delivers a file drop when the element under the pointer has this
+   * custom property set to "drop". Custom properties inherit, so declaring it
+   * once here makes every HTML element in the window a drop target. Without it
+   * drops are silently ignored, with no error anywhere.
+   *
+   * It does not cover the video, which is a native window the WebView cannot
+   * see; mpv accepts drops there itself (--drag-and-drop=replace) and the
+   * backend reconciles the result.
+   */
+  --wails-drop-target: drop;
 }
 
 *,

@@ -31,6 +31,7 @@ const (
 	eventMediaEnded = "media:ended"
 	eventError      = "app:error"
 	eventReady      = "app:ready"
+	eventResume     = "media:resume"
 )
 
 // resumeSaveInterval is how often a playback position is written while playing.
@@ -387,6 +388,12 @@ func (a *App) onFileLoaded(path string) {
 	a.refreshMediaInfo()
 	a.invalidateTranscript()
 
+	// A file mpv opened by itself - a drop on the video surface, which the
+	// WebView never sees - has been through none of Open's bookkeeping. Bring it
+	// back in line so history, resume and the queue behave identically however
+	// the file arrived.
+	a.reconcileExternalOpen()
+
 	// The queue always reflects what is playing, even for a file opened outside
 	// it, so "next" is meaningful no matter how the file was opened.
 	if a.playlist != nil {
@@ -429,6 +436,72 @@ func (a *App) onEndFile(reason string) {
 func (a *App) onEngineError(message string) {
 	a.log.Error("app: engine error: %s", message)
 	a.emit(eventError, message)
+}
+
+// reconcileExternalOpen handles a file that started playing without Open being
+// called, which happens when one is dropped onto the video surface.
+//
+// mpv owns that drop, because the video is a native window the WebView cannot
+// see. Rather than leaving such a file outside the application's model, it is
+// recorded in history here and its resume position offered, exactly as an
+// Open would have done.
+func (a *App) reconcileExternalOpen() {
+	engine := a.currentEngine()
+	if engine == nil {
+		return
+	}
+
+	state := engine.State()
+	if state.Path == "" {
+		return
+	}
+
+	a.mu.Lock()
+	known := a.currentPath
+	if samePath(known, state.Path) {
+		a.mu.Unlock()
+		return // opened through Open; already accounted for
+	}
+	a.currentPath = state.Path
+	a.mu.Unlock()
+
+	a.log.Info("app: %s was opened by mpv (dropped on the video)", filepath.Base(state.Path))
+
+	if a.history == nil {
+		return
+	}
+	if err := a.history.Record(state.Path, state.Title, 0, state.Duration); err != nil {
+		a.log.Warn("app: could not record the dropped file: %v", err)
+	}
+
+	entry, ok := a.history.Lookup(state.Path)
+	if !ok || !entry.ShouldOffer() {
+		return
+	}
+
+	if a.settings.Get().AutoResume {
+		if err := engine.Seek(a.ctx, entry.Position); err != nil {
+			a.log.Warn("app: could not resume the dropped file: %v", err)
+		}
+		return
+	}
+
+	// The interface owns all prompting, so it is asked to offer the choice.
+	if err := engine.Pause(a.ctx); err != nil {
+		a.log.Debug("app: could not pause before offering to resume: %v", err)
+	}
+	a.emit(eventResume, map[string]any{
+		"position": entry.Position,
+		"filename": filepath.Base(state.Path),
+	})
+}
+
+// samePath compares two paths the way Windows does.
+func samePath(a, b string) bool {
+	if a == "" || b == "" {
+		return false
+	}
+	return strings.EqualFold(filepath.Clean(a), filepath.Clean(b))
 }
 
 // applyPreferredTracks selects the audio and subtitle languages the user last

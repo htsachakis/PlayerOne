@@ -361,6 +361,16 @@ export function listen(): void {
     applyPlaylist(state);
   });
 
+  // A file dropped onto the video is opened by mpv, not through openPath, so
+  // the resume choice is offered by the backend instead.
+  EventsOn('media:resume', (prompt: { position: number; filename: string }) => {
+    if (!prompt) return;
+    store.set({
+      resumePrompt: { position: prompt.position, filename: prompt.filename },
+      drawer: 'resume',
+    });
+  });
+
   EventsOn('app:error', (message: string) => {
     store.set({ error: message });
   });
