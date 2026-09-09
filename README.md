@@ -552,7 +552,8 @@ Not implemented, in rough order of usefulness:
 ## Licence
 
 PlayerOne's own source is **[MIT](LICENSE)** — use it, modify it, ship it,
-commercially or not, keeping the copyright notice.
+commercially or not, keeping the copyright notice. [NOTICE](NOTICE) records the
+bundled third-party software and its terms.
 
 The release packages additionally bundle **mpv** and **ffmpeg**, which are GPL.
 They are separate programs that PlayerOne runs as child processes; no GPL code

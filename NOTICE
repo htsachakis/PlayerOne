@@ -1,0 +1,30 @@
+PlayerOne
+Copyright (c) 2026 Charalampos Tsachakis
+
+PlayerOne's own source code is licensed under the MIT License; see LICENSE.
+
+The release packages additionally bundle two programs that are licensed under
+the GNU General Public License:
+
+  * mpv      https://mpv.io                  GPLv2 or later
+  * FFmpeg   https://ffmpeg.org  (ffmpeg, ffprobe)  GPLv2 or later
+
+These are separate programs. PlayerOne runs them as child processes and links
+no GPL code into its own executable, which is why PlayerOne's source can carry
+the MIT licence while those binaries keep theirs.
+
+If you redistribute a package containing those binaries, their GPL obligations
+travel with them: recipients must be able to obtain the corresponding source.
+The binaries come from published upstream builds, and pointing at those sources
+is the practical way to satisfy this:
+
+  * mpv Windows builds    https://github.com/shinchiro/mpv-winbuild-cmake
+  * mpv source            https://github.com/mpv-player/mpv
+  * FFmpeg Windows builds https://github.com/BtbN/FFmpeg-Builds
+  * FFmpeg source         https://github.com/FFmpeg/FFmpeg
+
+scripts/fetch-tools.ps1 downloads exactly these binaries and prints their
+versions, so a release always corresponds to a published upstream build.
+
+Full detail, including how to build and distribute PlayerOne without bundling
+them at all, is in docs/third-party.md.

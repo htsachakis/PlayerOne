@@ -19,16 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-This licence covers PlayerOne's own source code only.
-
-The release packages also contain mpv and ffmpeg, which are licensed under the
-GNU General Public License. Those binaries are separate programs that PlayerOne
-runs as child processes; no GPL code is linked into PlayerOne itself, which is
-why PlayerOne's own source can carry this licence.
-
-If you redistribute a package that bundles those binaries, the GPL obligations
-travel with them. See docs/third-party.md for what that means in practice and
-where the corresponding sources are.

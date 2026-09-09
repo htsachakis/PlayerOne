@@ -1,5 +1,7 @@
 # Third-party software in PlayerOne
 
+> Summary version: `NOTICE`. This page is the reasoning behind it.
+
 PlayerOne is a front end. The work of decoding video is done by **mpv**, and
 subtitle extraction and file inspection by **ffmpeg** and **ffprobe**. Both are
 separate programs, invoked as child processes — no third-party code is linked
