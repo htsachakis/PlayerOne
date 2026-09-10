@@ -50,12 +50,20 @@ export function DisableSubtitles() {
   return window['go']['main']['App']['DisableSubtitles']();
 }
 
+export function ExportPlaylist() {
+  return window['go']['main']['App']['ExportPlaylist']();
+}
+
 export function ForgetRecent(arg1) {
   return window['go']['main']['App']['ForgetRecent'](arg1);
 }
 
 export function HandleDrop(arg1) {
   return window['go']['main']['App']['HandleDrop'](arg1);
+}
+
+export function ImportPlaylist() {
+  return window['go']['main']['App']['ImportPlaylist']();
 }
 
 export function InstallUpdate() {

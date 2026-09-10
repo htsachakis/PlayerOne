@@ -133,6 +133,13 @@ PLAYERONE_LOG=debug dist\PlayerOne-1.0.0-windows-amd64\PlayerOne.exe
 | 8.13 | ⬜ Remove a row with ✕ | Row goes; the playing file keeps playing |
 | 8.14 | ⬜ Clear the playlist | Empties; playback continues |
 | 8.15 | ⬜ Restart the app | Queue, shuffle and repeat are as you left them |
+| 8.16 | ⬜ **Save** in the playlist toolbar | Windows Save dialog opens |
+| 8.17 | ⬜ Save without typing an extension | The file gets `.m3u8` |
+| 8.18 | ⬜ Clear the playlist, then **Open** and pick that file | The queue returns and starts playing |
+| 8.19 | ⬜ Open the saved file in Notepad | Readable `#EXTM3U` with one path per entry |
+| 8.20 | ⬜ Open the same file in VLC | It plays there too |
+| 8.21 | ⬜ Save, move one of the videos, then open the playlist | The moved entry is struck through, the rest play |
+| 8.22 | ⬜ **Save** with an empty playlist | Says there is nothing to save |
 
 ## 9. Resume and history
 
@@ -157,7 +164,8 @@ PLAYERONE_LOG=debug dist\PlayerOne-1.0.0-windows-amd64\PlayerOne.exe
 | 10.3 | ⬜ Drag the divider between video and panel | Panel resizes; video follows live |
 | 10.4 | ⬜ `F` | Fullscreen; title bar hidden, **panel still there** |
 | 10.5 | ⬜ Leave the mouse still in fullscreen ~3s | Controls hide, video grows to fill |
-| 10.6 | ⬜ Move the mouse | Controls return |
+| 10.6 | ⬜ Move the mouse **over the video** | Controls return within about 1/8 second — *this used to fail; the page gets no mouse events over the native video window* |
+| 10.6b | ⬜ Let them hide and wake them several times | Works every time |
 | 10.7 | ⬜ `Esc` | Leaves fullscreen |
 | 10.8 | ⬜ Double-click the video | Toggles fullscreen |
 | 10.9 | ⬜ Resize the window | Video tracks the layout with no black gaps or overlap |

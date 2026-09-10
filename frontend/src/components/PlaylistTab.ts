@@ -4,6 +4,8 @@ import {
   addFilesToPlaylist,
   addFolderToPlaylist,
   clearPlaylist,
+  exportPlaylist,
+  importPlaylist,
   playPlaylistItem,
   removeFromPlaylist,
 } from '../services/player';
@@ -34,6 +36,12 @@ export class PlaylistTab {
     // the actions below when the panel was narrow.
     const addFiles = toolButton('addFiles', 'Add files…', () => void addFilesToPlaylist());
     const addFolder = toolButton('folderPlus', 'Add a folder…', () => void addFolderToPlaylist());
+    // Straight to the system dialogs: a playlist is a file, and the file
+    // dialogs already do choosing a name and a location better than anything
+    // built into the panel could.
+    const save = toolButton('save', 'Save this playlist to a file…', () => void exportPlaylist());
+    const open = toolButton('openPlaylist', 'Open a playlist file…', () => void importPlaylist());
+
     const clearAll = toolButton('trash', 'Clear the playlist', () => void clearPlaylist());
 
     this.countLabel = el('span', { class: 'playlist-count' });
@@ -49,6 +57,8 @@ export class PlaylistTab {
         { class: 'playlist-toolbar' },
         addFiles,
         addFolder,
+        save,
+        open,
         clearAll,
         this.countLabel,
       ),

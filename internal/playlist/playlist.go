@@ -322,6 +322,40 @@ func (l *List) UpdateCurrent(title string, duration float64) {
 	}
 }
 
+// Restore fills in titles and durations for entries already in the queue.
+//
+// A saved playlist carries both, so the queue can show real names and lengths
+// straight away instead of bare filenames until each file has been opened.
+func (l *List) Restore(source []Item) {
+	l.mu.Lock()
+
+	byPath := make(map[string]Item, len(source))
+	for _, item := range source {
+		byPath[key(item.Path)] = item
+	}
+
+	changed := false
+	for i := range l.items {
+		src, ok := byPath[key(l.items[i].Path)]
+		if !ok {
+			continue
+		}
+		if src.Title != "" && l.items[i].Title != src.Title {
+			l.items[i].Title = src.Title
+			changed = true
+		}
+		if src.Duration > 0 && l.items[i].Duration != src.Duration {
+			l.items[i].Duration = src.Duration
+			changed = true
+		}
+	}
+	l.mu.Unlock()
+
+	if changed {
+		l.save()
+	}
+}
+
 // Current returns the item that should be playing.
 func (l *List) Current() (Item, int, bool) {
 	l.mu.RLock()

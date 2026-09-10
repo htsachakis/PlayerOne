@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"time"
 
 	wailsruntime "github.com/wailsapp/wails/v2/pkg/runtime"
 
@@ -238,8 +239,82 @@ func (a *App) SetFullscreen(full bool) {
 
 	if full {
 		wailsruntime.WindowFullscreen(a.ctx)
+		a.startPointerWatch()
 	} else {
 		wailsruntime.WindowUnfullscreen(a.ctx)
+		a.stopPointerWatch()
+	}
+}
+
+// pointerPollInterval is how often the cursor is sampled in fullscreen.
+//
+// Eight times a second is far below anything a person would notice as lag when
+// reaching for the controls, and is a rounding error next to decoding video.
+const pointerPollInterval = 125 * time.Millisecond
+
+// startPointerWatch begins reporting pointer movement while fullscreen.
+//
+// The video is a native window, so while the pointer is over it the WebView
+// receives no mouse events whatsoever. Once the fullscreen controls auto-hide
+// the video covers the whole client area, which leaves the page unable to tell
+// that the pointer moved - and therefore no way to bring the controls back,
+// stranding the viewer with no means of pausing or seeking. Asking Windows for
+// the cursor position directly is the only signal that still works there.
+func (a *App) startPointerWatch() {
+	a.pointerMu.Lock()
+	defer a.pointerMu.Unlock()
+
+	if a.pointerStop != nil {
+		return // already watching
+	}
+
+	stop := make(chan struct{})
+	a.pointerStop = stop
+
+	a.log.Debug("app: watching the cursor so fullscreen controls can be woken")
+
+	a.wg.Add(1)
+	go a.watchPointer(stop)
+}
+
+func (a *App) stopPointerWatch() {
+	a.pointerMu.Lock()
+	defer a.pointerMu.Unlock()
+
+	if a.pointerStop == nil {
+		return
+	}
+	close(a.pointerStop)
+	a.pointerStop = nil
+	a.log.Debug("app: stopped watching the cursor")
+}
+
+func (a *App) watchPointer(stop chan struct{}) {
+	defer a.wg.Done()
+
+	ticker := time.NewTicker(pointerPollInterval)
+	defer ticker.Stop()
+
+	lastX, lastY, ok := winvideo.CursorPos()
+	if !ok {
+		a.log.Debug("app: the cursor position is unavailable; fullscreen controls will wake on key presses only")
+		return
+	}
+
+	for {
+		select {
+		case <-stop:
+			return
+		case <-a.stopCh:
+			return
+		case <-ticker.C:
+			x, y, ok := winvideo.CursorPos()
+			if !ok || (x == lastX && y == lastY) {
+				continue
+			}
+			lastX, lastY = x, y
+			a.emit(eventPointerMoved)
+		}
 	}
 }
 

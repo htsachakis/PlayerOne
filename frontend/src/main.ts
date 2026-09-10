@@ -12,6 +12,7 @@ import {
   handleDrop,
   loadSettings,
   logToBackend,
+  onPointerMoved,
   refreshPlaylist,
   refreshRecent,
   setFullscreen,
@@ -113,6 +114,11 @@ function installFullscreenBehaviour(shell: HTMLElement): void {
   window.addEventListener('mousemove', wake);
   window.addEventListener('pointerdown', wake);
   window.addEventListener('keydown', wake);
+
+  // Movement over the video reaches the page only through the backend: the
+  // video is a native window, and once the controls hide it covers everything,
+  // so no DOM mouse event is ever produced there.
+  onPointerMoved(wake);
 
   // Leaving fullscreen through the window manager rather than the button must
   // still be reflected in the interface.

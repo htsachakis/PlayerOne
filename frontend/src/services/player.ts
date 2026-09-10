@@ -240,6 +240,18 @@ export async function clearPlaylist(): Promise<void> {
   applyPlaylist((await guard(() => App.ClearPlaylist())) as PlaylistState | undefined);
 }
 
+// --- Playlist files ---
+
+/** Saves the queue to a file the user picks. */
+export async function exportPlaylist(): Promise<string | undefined> {
+  return (await guard(() => App.ExportPlaylist())) as string | undefined;
+}
+
+/** Opens a playlist file the user picks and starts playing it. */
+export async function importPlaylist(): Promise<void> {
+  applyPlaylist((await guard(() => App.ImportPlaylist())) as PlaylistState | undefined);
+}
+
 export const nextTrack = () => guard(() => App.NextTrack());
 export const previousTrack = () => guard(() => App.PreviousTrack());
 
@@ -369,6 +381,14 @@ export function setFullscreen(full: boolean): void {
 export const diagnostics = () => guard(() => App.Diagnostics()) as Promise<Diagnostics | undefined>;
 export const toolStatus = () => guard(() => App.ToolStatus()) as Promise<string[] | undefined>;
 
+/** Callbacks woken by pointer movement the page itself cannot observe. */
+const pointerListeners = new Set<() => void>();
+
+/** Registers a callback for pointer movement reported by the backend. */
+export function onPointerMoved(listener: () => void): void {
+  pointerListeners.add(listener);
+}
+
 // --- Backend events ---
 
 /**
@@ -427,6 +447,13 @@ export function listen(): void {
       resumePrompt: { position: prompt.position, filename: prompt.filename },
       drawer: 'resume',
     });
+  });
+
+  // The page cannot see the pointer while it is over the video, so the backend
+  // reports movement from Windows itself. Without this the fullscreen controls
+  // hide and never come back.
+  EventsOn('ui:pointer-moved', () => {
+    pointerListeners.forEach((listener) => listener());
   });
 
   EventsOn('update:available', (info: UpdateInfo) => {

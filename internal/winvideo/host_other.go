@@ -38,3 +38,6 @@ func (h *Host) ParentClientSize() (int, int, bool)       { return 0, 0, false }
 
 // FindMainWindow is not available on this platform.
 func FindMainWindow(time.Duration) (uintptr, error) { return 0, ErrUnsupported }
+
+// CursorPos is not available on this platform.
+func CursorPos() (int, int, bool) { return 0, 0, false }

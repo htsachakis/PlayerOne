@@ -40,6 +40,7 @@ var (
 	procGetClassNameW           = user32.NewProc("GetClassNameW")
 	procIsWindowVisible         = user32.NewProc("IsWindowVisible")
 	procGetClientRect           = user32.NewProc("GetClientRect")
+	procGetCursorPos            = user32.NewProc("GetCursorPos")
 	procInvalidateRect          = user32.NewProc("InvalidateRect")
 
 	procCreateSolidBrush = gdi32.NewProc("CreateSolidBrush")
@@ -459,4 +460,20 @@ func findWindowByClass(class string, pid uint32) uintptr {
 
 	procEnumWindows.Call(callback, 0)
 	return found
+}
+
+// CursorPos returns the pointer's position in screen coordinates.
+//
+// This exists because the video is a native window: while the pointer is over
+// it, the WebView receives no mouse events at all, so the interface cannot tell
+// that the pointer moved. In fullscreen the video covers the whole client area
+// once the controls auto-hide, which would otherwise leave no way to bring them
+// back short of pressing a key. Asking Windows directly sidesteps the problem.
+func CursorPos() (x, y int, ok bool) {
+	var p point
+	ret, _, _ := procGetCursorPos.Call(uintptr(unsafe.Pointer(&p)))
+	if ret == 0 {
+		return 0, 0, false
+	}
+	return int(p.X), int(p.Y), true
 }

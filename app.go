@@ -34,6 +34,10 @@ const (
 	eventError      = "app:error"
 	eventReady      = "app:ready"
 	eventResume     = "media:resume"
+	// eventPointerMoved wakes the auto-hidden fullscreen controls. The page
+	// cannot see the pointer while it is over the video, so this is the only
+	// signal it gets.
+	eventPointerMoved = "ui:pointer-moved"
 )
 
 // resumeSaveInterval is how often a playback position is written while playing.
@@ -98,6 +102,10 @@ type App struct {
 	// on something PlayerOne fetched rather than on anything the interface
 	// hands back to it.
 	pendingUpdate *updater.Release
+
+	// pointerStop ends the fullscreen pointer watch; see watchPointer.
+	pointerMu   sync.Mutex
+	pointerStop chan struct{}
 
 	initOnce sync.Once
 	stopOnce sync.Once
@@ -295,6 +303,7 @@ func (a *App) shutdown(context.Context) {
 
 		a.saveResumePosition()
 		a.cancelTranscript()
+		a.stopPointerWatch()
 		a.wg.Wait()
 
 		if engine := a.currentEngine(); engine != nil {

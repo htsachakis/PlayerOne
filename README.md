@@ -36,7 +36,8 @@ audio tracks, embedded subtitles, odd codecs — without you converting anything
   playback as it goes, with a search box and a "Follow playback" toggle
 - **Info** — container, codecs, resolution, frame rate, bitrates, channel
   layouts, track counts, and which decoder mpv actually chose
-- **Playlist** — a queue with shuffle and repeat (off / all / one)
+- **Playlist** — a queue with shuffle and repeat (off / all / one), saved to and
+  loaded from ordinary `.m3u8` files that other players can read
 
 **Tracks and subtitles**
 
@@ -53,6 +54,7 @@ audio tracks, embedded subtitles, odd codecs — without you converting anything
 - Drop several videos, or a folder, to build a playlist
 - Appears under Windows' **Open with** for 36 media formats, without taking over
   anything you already use
+- Save the queue as an `.m3u8` playlist and open it again later, or in VLC
 - Recent files with the position you reached in each
 - Tells you when a new version is out, and installs it for you
 

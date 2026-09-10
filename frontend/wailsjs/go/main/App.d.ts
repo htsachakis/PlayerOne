@@ -30,9 +30,13 @@ export function Diagnostics():Promise<main.Diagnostics>;
 
 export function DisableSubtitles():Promise<void>;
 
+export function ExportPlaylist():Promise<string>;
+
 export function ForgetRecent(arg1:string):Promise<void>;
 
 export function HandleDrop(arg1:Array<string>):Promise<void>;
+
+export function ImportPlaylist():Promise<playlist.State>;
 
 export function InstallUpdate():Promise<void>;
 
