@@ -391,8 +391,11 @@ after the window appears. When one exists, a bar appears under the title bar
 offering *What's new*, *Update now*, *Skip this version* and *Later*.
 
 *Update now* downloads the installer, **verifies it against the `SHA256SUMS.txt`
-published with the release**, then closes PlayerOne so its files can be replaced
-and reopens it when the installer finishes. A download whose checksum does not
+published with the release**, then asks Windows to run it. PlayerOne installs
+into `Program Files`, so Windows raises its usual **User Account Control
+prompt** first; declining it leaves PlayerOne running on the version it has.
+Once accepted, PlayerOne closes so its files can be replaced and the installer
+reopens it when it finishes. A download whose checksum does not
 match is deleted and refused — the updater runs an executable, so it has to be
 able to prove what it is running.
 

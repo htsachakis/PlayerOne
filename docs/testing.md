@@ -207,7 +207,8 @@ PLAYERONE_LOG=debug dist\PlayerOne-1.0.0-windows-amd64\PlayerOne.exe
 | 13.4 | ⬜ **Check now** while on the latest | "PlayerOne x.y.z is the latest version." |
 | 13.5 | ⬜ Install an older release, then launch | Update bar appears within ~10s |
 | 13.6 | ⬜ **What's new** | Opens the GitHub release page |
-| 13.7 | ⬜ **Update now** | Progress bar, then PlayerOne closes and the installer runs |
+| 13.7 | ⬜ **Update now** | Progress bar, a UAC prompt, then PlayerOne closes and the installer runs |
+| 13.7b | ⬜ **Update now**, then decline the UAC prompt | Says permission was declined; PlayerOne stays open and playable |
 | 13.8 | ⬜ Finish the installer | PlayerOne reopens on the new version |
 | 13.9 | ⬜ **Skip this version**, restart | Not offered again |
 | 13.9b | ⬜ **Check now** in settings, then **Update now** | Installs; it must not answer "check for updates first" |
