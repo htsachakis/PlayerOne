@@ -58,15 +58,27 @@ audio tracks, embedded subtitles, odd codecs — without you converting anything
 
 ## Screenshots
 
-<!-- Replace these with your own captures; the app writes nothing here. -->
+**Chapters.** Every embedded chapter with its timestamp, the one you are in
+highlighted, and matching marks on the seek bar. Clicking a row jumps there.
 
-| The player with chapters | The transcript |
-|---|---|
-| _screenshot placeholder_ | _screenshot placeholder_ |
+![The chapter list beside a playing video](docs/screenshots/chapters.png)
 
-| The Info tab | The playlist |
-|---|---|
-| _screenshot placeholder_ | _screenshot placeholder_ |
+**Transcript.** Every subtitle line, timestamped and clickable, scrolling itself
+to keep up with playback until you turn *Follow playback* off.
+
+![The transcript following playback, the current line highlighted](docs/screenshots/transcript.png)
+
+**Info.** What the file actually is — container, codecs, resolution, frame rate,
+channel layout — including which decoder mpv chose for it.
+
+![The Info tab listing file, video and audio details](docs/screenshots/info.png)
+
+**Playlist.** Drop a folder of lessons and it queues in order; shuffle and
+repeat live on the control bar.
+
+![The playlist tab with three queued lessons](docs/screenshots/playlist.png)
+
+The lesson in these captures is generated sample media, not a real course.
 
 ## Requirements
 
