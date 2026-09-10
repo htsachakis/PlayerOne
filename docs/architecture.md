@@ -206,6 +206,7 @@ to keep that honest.
 | `internal/settings` | Settings load/save |
 | `internal/history` | Recent files and resume positions |
 | `internal/playlist` | The queue, and the shuffle and repeat ordering rules |
+| `internal/notes` | The plain-text `.notes` file format, and the store that binds one to the open video |
 | `app.go` | Wails-bound API — the only place that knows about both the UI and the player |
 
 mpv-specific details (property names, IPC message shapes) do not leak past `internal/player`.

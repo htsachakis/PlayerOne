@@ -67,12 +67,14 @@ export class NoteComposer {
     this.root = el(
       'div',
       { class: 'note-composer', role: 'dialog', 'aria-label': 'Write a note' },
-      el('div', { class: 'composer-head' }, this.heading, this.star),
-      this.textarea,
-      el('div', { class: 'composer-actions' },
-        el('span', { class: 'composer-hint' }, 'Enter saves · Shift+Enter for a new line · Esc cancels'),
-        cancel,
-        save,
+      el('div', { class: 'composer-inner' },
+        el('div', { class: 'composer-head' }, this.heading, this.star),
+        this.textarea,
+        el('div', { class: 'composer-actions' },
+          el('span', { class: 'composer-hint' }, 'Enter saves · Shift+Enter for a new line · Esc cancels'),
+          cancel,
+          save,
+        ),
       ),
     );
     this.root.hidden = true;

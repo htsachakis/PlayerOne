@@ -65,6 +65,15 @@ func (a *App) Stop() error {
 	a.mu.Unlock()
 
 	a.invalidateTranscript()
+
+	// Notes belong to a file. With nothing open there is nothing to write to,
+	// and leaving the previous video's notes on screen would invite a note to be
+	// filed against a video that is no longer playing.
+	if a.notes != nil {
+		a.notes.Release()
+		a.emitNotes()
+	}
+
 	a.emit(eventMediaOpen, nil)
 	return nil
 }

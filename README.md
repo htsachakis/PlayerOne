@@ -34,10 +34,15 @@ audio tracks, embedded subtitles, odd codecs — without you converting anything
   highlighted, searchable, click to jump
 - **Transcript** — every subtitle line, timestamped and clickable, following
   playback as it goes, with a search box and a "Follow playback" toggle
-- **Info** — container, codecs, resolution, frame rate, bitrates, channel
-  layouts, track counts, and which decoder mpv actually chose
+- **Notes** — press `T` to note the moment you are watching. The video pauses
+  while you type, and the note is stamped a few seconds back, because you always
+  realise afterwards. Save one with an empty box and it is a bookmark.
+  Searchable, filterable to starred only, clickable to jump, and ticked on the
+  seek bar
 - **Playlist** — a queue with shuffle and repeat (off / all / one), saved to and
   loaded from ordinary `.m3u8` files that other players can read
+- **Info** — container, codecs, resolution, frame rate, bitrates, channel
+  layouts, track counts, and which decoder mpv actually chose
 
 **Tracks and subtitles**
 
@@ -327,6 +332,7 @@ PlayerOne/
 | `C` | Subtitles on / off |
 | `R` | Reverse playback on / off |
 | `P` | Show / hide the side panel |
+| `T` | Take a note at the current moment |
 | `N` | Next in the playlist |
 | `B` | Previous in the playlist |
 | `[` / `]` | Slower / faster |

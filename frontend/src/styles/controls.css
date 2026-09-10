@@ -599,18 +599,25 @@
 
 /* The note composer ------------------------------------------------------- */
 
+/*
+ * A row in the shell's column, not an overlay.
+ *
+ * mpv's video is a native child window sitting above the WebView, so anything
+ * positioned over the video area is drawn behind it and simply cannot be seen.
+ * The drawer solves this by taking real layout space: the stage shrinks, the
+ * video surface's ResizeObserver moves the native window, and the composer is
+ * visible because it is no longer over the video at all.
+ */
 .note-composer {
-  position: absolute;
-  left: 50%;
-  bottom: calc(var(--control-height) + var(--space-5) * 2);
-  z-index: 40;
-  width: min(560px, calc(100% - var(--space-5) * 2));
+  flex: none;
   padding: var(--space-3);
-  transform: translateX(-50%);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius);
   background: var(--panel);
-  box-shadow: var(--shadow);
+  border-top: 1px solid var(--border);
+}
+
+.composer-inner {
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 .composer-head {

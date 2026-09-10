@@ -517,6 +517,11 @@ export function listen(): void {
 
     // A new video must not inherit the previous one's search or half-typed note.
     store.set({ notesQuery: '', notesStarredOnly: false, noteComposer: null });
+
+    // Asked for rather than waited for: the backend emits notes:changed as it
+    // binds the file, which can happen before this listener exists when a path
+    // is given on the command line.
+    void refreshNotes();
   });
 
   EventsOn('notes:changed', (result: NotesResult) => {
