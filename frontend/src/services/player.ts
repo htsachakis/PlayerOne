@@ -5,6 +5,8 @@ import { store, defaultSettings } from '../state/store';
 import type {
   Diagnostics,
   MediaInfo,
+  Note,
+  NotesResult,
   OpenResult,
   PlaybackState,
   PlaylistState,
@@ -240,6 +242,89 @@ export async function clearPlaylist(): Promise<void> {
   applyPlaylist((await guard(() => App.ClearPlaylist())) as PlaylistState | undefined);
 }
 
+// --- Notes ---
+
+/** Applies a notes result from the backend, which is always the whole list. */
+function applyNotes(result: NotesResult | undefined): void {
+  if (!result) return;
+  store.set({ notes: result });
+}
+
+export async function refreshNotes(): Promise<void> {
+  applyNotes((await guard(() => App.Notes())) as NotesResult | undefined);
+}
+
+export async function addNote(time: number, text: string, starred: boolean): Promise<void> {
+  applyNotes((await guard(() => App.AddNote(time, text, starred))) as NotesResult | undefined);
+}
+
+export async function deleteNote(time: number): Promise<void> {
+  applyNotes((await guard(() => App.DeleteNote(time))) as NotesResult | undefined);
+}
+
+export async function toggleNoteStar(time: number): Promise<void> {
+  applyNotes((await guard(() => App.ToggleNoteStar(time))) as NotesResult | undefined);
+}
+
+export async function saveNotesAs(): Promise<void> {
+  applyNotes((await guard(() => App.SaveNotesAs())) as NotesResult | undefined);
+}
+
+export async function loadNotesFrom(): Promise<void> {
+  applyNotes((await guard(() => App.LoadNotesFrom())) as NotesResult | undefined);
+}
+
+/**
+ * Opens the note composer for the current moment.
+ *
+ * The stamp is set a few seconds back because a moment is recognised as worth
+ * noting only after it has passed. When a note is already there, this edits it
+ * rather than filing a second one a fraction of a second away.
+ */
+export async function openNoteComposer(): Promise<void> {
+  const state = store.get();
+  if (!state.playback.fileLoaded) return;
+  if (state.noteComposer) return;
+
+  const offset = state.settings.noteCaptureOffset ?? 0;
+  const time = Math.max(0, Math.round(state.playback.position - offset));
+
+  const wasPlaying = !state.playback.paused;
+  if (state.settings.pauseWhileComposingNote && wasPlaying) {
+    await pause();
+  }
+
+  // A negative time is the backend's way of saying there is no note here.
+  const found = (await guard(() => App.NoteAt(time))) as Note | undefined;
+  const existing = found && found.time >= 0 ? found : null;
+
+  store.set({
+    noteComposer: {
+      time: existing ? existing.time : time,
+      text: existing?.text ?? '',
+      starred: existing?.starred ?? false,
+      existing: existing !== null,
+      wasPlaying,
+    },
+  });
+}
+
+/** Closes the composer, resuming playback if it was running when it opened. */
+export function closeNoteComposer(): void {
+  const composer = store.get().noteComposer;
+  store.set({ noteComposer: null });
+
+  if (composer?.wasPlaying) void play();
+}
+
+export async function commitNoteComposer(text: string, starred: boolean): Promise<void> {
+  const composer = store.get().noteComposer;
+  if (!composer) return;
+
+  await addNote(composer.time, text, starred);
+  closeNoteComposer();
+}
+
 // --- Playlist files ---
 
 /** Saves the queue to a file the user picks. */
@@ -429,6 +514,13 @@ export function listen(): void {
     // once the file is open.
     if (info) void refreshTranscript();
     else store.set({ transcript: null });
+
+    // A new video must not inherit the previous one's search or half-typed note.
+    store.set({ notesQuery: '', notesStarredOnly: false, noteComposer: null });
+  });
+
+  EventsOn('notes:changed', (result: NotesResult) => {
+    store.set({ notes: result });
   });
 
   EventsOn('media:ended', () => {

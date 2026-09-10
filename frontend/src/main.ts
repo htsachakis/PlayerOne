@@ -24,6 +24,7 @@ import { TopBar } from './components/TopBar';
 import { UpdateBar } from './components/UpdateBar';
 import { VideoSurface } from './components/VideoSurface';
 import { Drawer } from './components/Drawer';
+import { NoteComposer } from './components/NoteComposer';
 import { PlayerControls } from './components/PlayerControls';
 import { SidePanel } from './components/SidePanel';
 import { el, toggleClass } from './util/dom';
@@ -49,6 +50,7 @@ function build(): void {
   const drawer = new Drawer();
   const controls = new PlayerControls();
   const sidePanel = new SidePanel();
+  const noteComposer = new NoteComposer();
 
   const stage = el('div', { class: 'stage' }, videoSurface.root, sidePanel.handle, sidePanel.root);
   const shell = el(
@@ -57,6 +59,7 @@ function build(): void {
     topBar.root,
     updateBar.root,
     stage,
+    noteComposer.root,
     drawer.root,
     controls.root,
   );
@@ -69,6 +72,7 @@ function build(): void {
   drawer.mount();
   controls.mount();
   sidePanel.mount();
+  noteComposer.mount();
 
   installShortcuts();
   installFullscreenBehaviour(shell);

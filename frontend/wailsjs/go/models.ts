@@ -6,6 +6,7 @@ export namespace history {
 	    title: string;
 	    position: number;
 	    duration: number;
+	    notesPath?: string;
 	    // Go type: time
 	    updatedAt: any;
 	    exists: boolean;
@@ -21,6 +22,7 @@ export namespace history {
 	        this.title = source["title"];
 	        this.position = source["position"];
 	        this.duration = source["duration"];
+	        this.notesPath = source["notesPath"];
 	        this.updatedAt = this.convertValues(source["updatedAt"], null);
 	        this.exists = source["exists"];
 	    }
@@ -81,6 +83,44 @@ export namespace main {
 	        this.playlistPath = source["playlistPath"];
 	        this.hwdec = source["hwdec"];
 	    }
+	}
+	export class NotesResult {
+	    entries: notes.Note[];
+	    path: string;
+	    origin: string;
+	    filename: string;
+	    status: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new NotesResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.entries = this.convertValues(source["entries"], notes.Note);
+	        this.path = source["path"];
+	        this.origin = source["origin"];
+	        this.filename = source["filename"];
+	        this.status = source["status"];
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
 	}
 	export class OpenResult {
 	    path: string;
@@ -177,6 +217,27 @@ export namespace main {
 		    }
 		    return a;
 		}
+	}
+
+}
+
+export namespace notes {
+	
+	export class Note {
+	    time: number;
+	    text: string;
+	    starred: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new Note(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.time = source["time"];
+	        this.text = source["text"];
+	        this.starred = source["starred"];
+	    }
 	}
 
 }
@@ -537,6 +598,9 @@ export namespace settings {
 	    playbackSpeed: number;
 	    autoResume: boolean;
 	    followTranscript: boolean;
+	    noteCaptureOffset: number;
+	    pauseWhileComposingNote: boolean;
+	    showNoteMarks: boolean;
 	    sidePanelVisible: boolean;
 	    sidePanelWidth: number;
 	    lastSubtitleLang: string;
@@ -560,6 +624,9 @@ export namespace settings {
 	        this.playbackSpeed = source["playbackSpeed"];
 	        this.autoResume = source["autoResume"];
 	        this.followTranscript = source["followTranscript"];
+	        this.noteCaptureOffset = source["noteCaptureOffset"];
+	        this.pauseWhileComposingNote = source["pauseWhileComposingNote"];
+	        this.showNoteMarks = source["showNoteMarks"];
 	        this.sidePanelVisible = source["sidePanelVisible"];
 	        this.sidePanelWidth = source["sidePanelWidth"];
 	        this.lastSubtitleLang = source["lastSubtitleLang"];

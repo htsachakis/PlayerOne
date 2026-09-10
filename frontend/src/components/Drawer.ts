@@ -262,6 +262,29 @@ export class Drawer {
       el(
         'div',
         { class: 'settings-list settings-section' },
+        checkbox('Pause while writing a note', settings.pauseWhileComposingNote, (checked) => {
+          void saveSettings({ ...settings, pauseWhileComposingNote: checked });
+        }),
+        checkbox('Show notes on the seek bar', settings.showNoteMarks, (checked) => {
+          void saveSettings({ ...settings, showNoteMarks: checked });
+        }),
+        el(
+          'label',
+          { class: 'settings-row' },
+          el('span', {}, 'Stamp notes this many seconds earlier'),
+          numberBox(settings.noteCaptureOffset, 0, 60, (value) => {
+            void saveSettings({ ...settings, noteCaptureOffset: value });
+          }),
+        ),
+        el(
+          'p',
+          { class: 'menu-note' },
+          'A moment is usually recognised as worth noting just after it passes. 0 uses the exact position.',
+        ),
+      ),
+      el(
+        'div',
+        { class: 'settings-list settings-section' },
         checkbox('Check for updates automatically', settings.checkForUpdates, (checked) => {
           setCheckForUpdates(checked);
         }),
@@ -445,6 +468,32 @@ function selectBox(options: string[], value: string, onChange: (value: string) =
   }
   select.addEventListener('change', () => onChange(select.value));
   return select;
+}
+
+/**
+ * A whole-number field, clamped to a range.
+ *
+ * Committed on change rather than on every keystroke, so half-typed values like
+ * "1" on the way to "15" are not written to the settings file.
+ */
+function numberBox(value: number, min: number, max: number, onChange: (value: number) => void): HTMLElement {
+  const input = el('input', {
+    class: 'settings-number',
+    type: 'number',
+    min: String(min),
+    max: String(max),
+    step: '1',
+  }) as HTMLInputElement;
+  input.value = String(value);
+
+  input.addEventListener('change', () => {
+    const parsed = Number.parseInt(input.value, 10);
+    const next = Number.isFinite(parsed) ? Math.min(Math.max(parsed, min), max) : value;
+    input.value = String(next);
+    onChange(next);
+  });
+
+  return input;
 }
 
 /** A -/+ stepper for a subtitle or audio offset, in tenths of a second. */

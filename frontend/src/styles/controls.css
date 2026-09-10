@@ -432,6 +432,17 @@
   border-radius: var(--radius-sm);
 }
 
+.settings-number {
+  width: 64px;
+  padding: 4px 6px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+}
+
 /* --- Resume prompt --- */
 
 .resume-menu {
@@ -584,4 +595,119 @@
   flex-basis: 100%;
   color: var(--text-faint);
   font-size: 12px;
+}
+
+/* The note composer ------------------------------------------------------- */
+
+.note-composer {
+  position: absolute;
+  left: 50%;
+  bottom: calc(var(--control-height) + var(--space-5) * 2);
+  z-index: 40;
+  width: min(560px, calc(100% - var(--space-5) * 2));
+  padding: var(--space-3);
+  transform: translateX(-50%);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.composer-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-2);
+  font-size: 12px;
+  color: var(--text-dim);
+}
+
+.composer-star {
+  padding: 2px;
+  border: 0;
+  background: none;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: color var(--transition);
+}
+
+.composer-star:hover,
+.composer-star.active {
+  color: var(--accent);
+}
+
+.composer-input {
+  width: 100%;
+  padding: var(--space-2);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  resize: vertical;
+}
+
+.composer-input:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.composer-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+}
+
+.composer-hint {
+  flex: 1;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
+.composer-save,
+.composer-cancel {
+  padding: 6px 12px;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text);
+  font: inherit;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.composer-cancel:hover {
+  background: var(--surface-hover);
+}
+
+.composer-save {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
+  font-weight: 600;
+}
+
+.composer-save:hover {
+  background: var(--accent-dim);
+  border-color: var(--accent-dim);
+}
+
+/* Note marks on the seek bar ---------------------------------------------- */
+
+.timeline-note {
+  position: absolute;
+  top: 50%;
+  width: 2px;
+  height: 10px;
+  margin-left: -1px;
+  transform: translateY(-50%);
+  border-radius: 1px;
+  background: var(--text-dim);
+  pointer-events: none;
+}
+
+.timeline-note.starred {
+  height: 14px;
+  background: var(--accent);
 }

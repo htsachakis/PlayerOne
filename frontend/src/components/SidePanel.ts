@@ -5,6 +5,7 @@ import { el, toggleClass } from '../util/dom';
 import { icon } from './icons';
 import { ChaptersTab } from './ChaptersTab';
 import { TranscriptTab } from './TranscriptTab';
+import { NotesTab } from './NotesTab';
 import { InfoTab } from './InfoTab';
 import { PlaylistTab } from './PlaylistTab';
 
@@ -12,7 +13,12 @@ const MIN_WIDTH = 260;
 const MAX_WIDTH = 900;
 
 /**
- * The "In this video" panel: chapters, transcript and file details.
+ * The "In this video" panel: chapters, transcript, notes, the queue and file
+ * details.
+ *
+ * Notes sits beside the transcript because the two are used the same way -
+ * timestamped lists read while watching - and Info comes last, being reference
+ * material consulted once rather than followed.
  *
  * The panel is resizable by dragging its inner edge, and hideable so the video
  * can use the full window width.
@@ -25,8 +31,9 @@ export class SidePanel {
   private readonly titleNode: HTMLElement;
   private readonly chapters = new ChaptersTab();
   private readonly transcript = new TranscriptTab();
-  private readonly info = new InfoTab();
+  private readonly notes = new NotesTab();
   private readonly playlist = new PlaylistTab();
+  private readonly info = new InfoTab();
 
   private dragging = false;
   private currentTab: PanelTab = 'chapters';
@@ -53,8 +60,9 @@ export class SidePanel {
     for (const [key, label] of [
       ['chapters', 'Chapters'],
       ['transcript', 'Transcript'],
-      ['info', 'Info'],
+      ['notes', 'Notes'],
       ['playlist', 'Playlist'],
+      ['info', 'Info'],
     ] as Array<[PanelTab, string]>) {
       const button = el('button', {
         class: 'panel-tab',
@@ -76,8 +84,9 @@ export class SidePanel {
       el('div', { class: 'panel-body' },
         this.chapters.root,
         this.transcript.root,
-        this.info.root,
+        this.notes.root,
         this.playlist.root,
+        this.info.root,
       ),
     );
   }
@@ -85,8 +94,9 @@ export class SidePanel {
   mount(): void {
     this.chapters.mount();
     this.transcript.mount();
-    this.info.mount();
+    this.notes.mount();
     this.playlist.mount();
+    this.info.mount();
 
     this.handle.addEventListener('pointerdown', this.onDragStart);
     this.handle.addEventListener('keydown', this.onHandleKey);
@@ -174,8 +184,9 @@ export class SidePanel {
     // rendered rows survive switching back and forth.
     this.chapters.root.hidden = state.panelTab !== 'chapters';
     this.transcript.root.hidden = state.panelTab !== 'transcript';
-    this.info.root.hidden = state.panelTab !== 'info';
+    this.notes.root.hidden = state.panelTab !== 'notes';
     this.playlist.root.hidden = state.panelTab !== 'playlist';
+    this.info.root.hidden = state.panelTab !== 'info';
 
     // The heading names what the panel is showing. "In this video" is wrong for
     // the queue, which is about the videos around this one.

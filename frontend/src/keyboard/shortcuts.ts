@@ -3,6 +3,7 @@ import {
   chooseAndOpen,
   clearError,
   nextTrack,
+  openNoteComposer,
   previousTrack,
   disableSubtitles,
   persistSidePanel,
@@ -119,6 +120,13 @@ function onKeyDown(event: KeyboardEvent): void {
     case 'R':
       event.preventDefault();
       void toggleReverse();
+      break;
+
+    // Notes take T, not N: N is next-track, and B, its neighbour, is previous.
+    case 't':
+    case 'T':
+      event.preventDefault();
+      void openNoteComposer();
       break;
 
     case 'p':

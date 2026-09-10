@@ -19,6 +19,7 @@ export class Timeline {
   private readonly played: HTMLElement;
   private readonly handle: HTMLElement;
   private readonly marks: HTMLElement;
+  private readonly noteMarks: HTMLElement;
   private readonly tooltip: HTMLElement;
   private readonly current: HTMLElement;
   private readonly total: HTMLElement;
@@ -27,11 +28,15 @@ export class Timeline {
   private dragPosition = 0;
   private duration = 0;
   private chapterSignature = '';
+  private noteSignature = '';
 
   constructor() {
     this.played = el('div', { class: 'timeline-played' });
     this.handle = el('div', { class: 'timeline-handle' });
     this.marks = el('div', { class: 'timeline-marks' });
+    // Its own container so the chapter rebuild, which clears wholesale, cannot
+    // wipe the note ticks along with it.
+    this.noteMarks = el('div', { class: 'timeline-marks' });
     this.tooltip = el('div', { class: 'timeline-tooltip', hidden: true });
 
     this.track = el(
@@ -45,6 +50,7 @@ export class Timeline {
       el('div', { class: 'timeline-rail' }),
       this.played,
       this.marks,
+      this.noteMarks,
       this.handle,
       this.tooltip,
     );
@@ -149,6 +155,7 @@ export class Timeline {
     this.duration = duration;
 
     this.renderChapterMarks(state);
+    this.renderNoteMarks(state);
 
     if (this.dragging) return; // the pointer owns the handle until it is released
     this.paint(position, duration);
@@ -189,6 +196,34 @@ export class Timeline {
       const mark = el('span', { class: 'timeline-mark', title: chapter.title });
       mark.style.left = `${(chapter.start / duration) * 100}%`;
       this.marks.append(mark);
+    }
+  }
+
+  /**
+   * Draws a tick for each note.
+   *
+   * Rebuilt only when the notes actually change, for the same reason the chapter
+   * marks are: this runs five times a second.
+   */
+  private renderNoteMarks(state: AppState): void {
+    const duration = state.playback.duration;
+    const notes = state.settings.showNoteMarks ? (state.notes?.entries ?? []) : [];
+
+    const signature = `${duration}|${notes.map((n) => `${n.time}${n.starred ? '*' : ''}`).join(',')}`;
+    if (signature === this.noteSignature) return;
+    this.noteSignature = signature;
+
+    clear(this.noteMarks);
+    if (duration <= 0) return;
+
+    for (const note of notes) {
+      if (note.time <= 0 || note.time >= duration) continue;
+      const mark = el('span', {
+        class: note.starred ? 'timeline-note starred' : 'timeline-note',
+        title: note.text || 'Bookmark',
+      });
+      mark.style.left = `${(note.time / duration) * 100}%`;
+      this.noteMarks.append(mark);
     }
   }
 }

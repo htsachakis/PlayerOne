@@ -151,6 +151,9 @@ export interface Settings {
   playbackSpeed: number;
   autoResume: boolean;
   followTranscript: boolean;
+  noteCaptureOffset: number;
+  pauseWhileComposingNote: boolean;
+  showNoteMarks: boolean;
   sidePanelVisible: boolean;
   sidePanelWidth: number;
   lastSubtitleLang: string;
@@ -251,4 +254,22 @@ export interface UpdateInfo {
   /** False for the portable copy, which has no installer to update in place. */
   installed: boolean;
   status: UpdateStatus;
+}
+
+/** Where a notes file came from, which is what the panel explains to the user. */
+export type NotesOrigin = 'beside' | 'chosen' | 'unsaved';
+
+/** One timestamped note. Empty text is a bookmark. */
+export interface Note {
+  time: number;
+  text: string;
+  starred: boolean;
+}
+
+export interface NotesResult {
+  entries: Note[];
+  path: string;
+  origin: NotesOrigin;
+  filename: string;
+  status: string;
 }

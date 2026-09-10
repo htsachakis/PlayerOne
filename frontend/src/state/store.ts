@@ -2,6 +2,7 @@ import type {
   Chapter,
   Diagnostics,
   MediaInfo,
+  NotesResult,
   PlaybackState,
   PlaylistState,
   RecentEntry,
@@ -11,7 +12,7 @@ import type {
   UpdateInfo,
 } from '../types/media';
 
-export type PanelTab = 'chapters' | 'transcript' | 'info' | 'playlist';
+export type PanelTab = 'chapters' | 'transcript' | 'notes' | 'playlist' | 'info';
 
 /** Which expandable drawer, if any, is open above the control bar. */
 export type Drawer = 'none' | 'subtitles' | 'audio' | 'speed' | 'settings' | 'recent' | 'resume';
@@ -24,6 +25,21 @@ export interface AppState {
   mediaInfo: MediaInfo | null;
   transcript: TranscriptResult | null;
   transcriptLoading: boolean;
+
+  notes: NotesResult | null;
+  notesQuery: string;
+  notesStarredOnly: boolean;
+
+  /** The open note composer, null when it is closed. */
+  noteComposer: {
+    time: number;
+    text: string;
+    starred: boolean;
+    /** True when this is editing a note that already exists. */
+    existing: boolean;
+    /** Whether playback was running when the composer opened. */
+    wasPlaying: boolean;
+  } | null;
 
   settings: Settings;
   diagnostics: Diagnostics | null;
@@ -91,6 +107,9 @@ export const defaultSettings: Settings = {
   playbackSpeed: 1,
   autoResume: false,
   followTranscript: true,
+  noteCaptureOffset: 5,
+  pauseWhileComposingNote: true,
+  showNoteMarks: true,
   sidePanelVisible: true,
   sidePanelWidth: 380,
   lastSubtitleLang: '',
@@ -121,6 +140,11 @@ class Store {
     mediaInfo: null,
     transcript: null,
     transcriptLoading: false,
+
+    notes: null,
+    notesQuery: '',
+    notesStarredOnly: false,
+    noteComposer: null,
 
     settings: { ...defaultSettings },
     diagnostics: null,
