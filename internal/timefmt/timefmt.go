@@ -44,3 +44,18 @@ func FormatPadded(seconds float64) string {
 	}
 	return fmt.Sprintf("%02d:%02d", m, s)
 }
+
+// FormatClock renders a duration as a fully padded HH:MM:SS.
+//
+// Unlike Format and FormatPadded, which drop the hours field when it is zero to
+// keep the interface tidy, this one is fixed-width. It is what the .notes file
+// is written with, where a straight column matters more than brevity and a
+// parser has to read it back.
+func FormatClock(seconds float64) string {
+	if !(seconds > 0) { // also catches NaN
+		seconds = 0
+	}
+
+	total := int64(seconds)
+	return fmt.Sprintf("%02d:%02d:%02d", total/3600, (total%3600)/60, total%60)
+}

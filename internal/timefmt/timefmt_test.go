@@ -66,3 +66,23 @@ func zeroDiv() float64 {
 	zero := 0.0
 	return zero / zero
 }
+
+func TestFormatClock(t *testing.T) {
+	tests := []struct {
+		seconds float64
+		want    string
+	}{
+		{0, "00:00:00"},
+		{-5, "00:00:00"},
+		{42, "00:00:42"},
+		{754, "00:12:34"},
+		{3723, "01:02:03"},
+		{360000, "100:00:00"},
+	}
+
+	for _, tc := range tests {
+		if got := FormatClock(tc.seconds); got != tc.want {
+			t.Errorf("FormatClock(%v) = %q, want %q", tc.seconds, got, tc.want)
+		}
+	}
+}
