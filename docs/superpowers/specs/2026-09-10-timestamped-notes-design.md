@@ -168,6 +168,12 @@ Built on `TranscriptTab.ts`, whose interaction this shares almost exactly: a
 timestamped list, click to seek, the current entry highlighted as playback
 passes it.
 
+The side panel's tabs become **Chapters, Transcript, Notes, Playlist, Info**.
+Notes sits beside Transcript because the two are used the same way - timestamped
+lists read while watching - and Info moves to the end, being reference material
+consulted once rather than followed. This reorders the existing tabs, not only
+adds one.
+
 Header controls:
 
 - **Search** - filters as you type, matching note text case-insensitively, with
@@ -196,10 +202,18 @@ does not need new guarding.
 
 ### Capture
 
-`N` pauses playback, stamps `position - offset` clamped at zero, and opens the
-composer. If a note already exists within 0.5s of that stamp, the composer opens
-with its text and star state loaded, and saving replaces it. Playback resumes on
-save or cancel **only if it was playing when the key was pressed**.
+`T` - take a note - pauses playback, stamps `position - offset` clamped at zero,
+and opens the composer. `N` is not available: `shortcuts.ts` already binds it to
+next-track, with `B` for previous. `T` is free and mnemonic.
+
+If a note already exists within 0.5s of that stamp, the composer opens with its
+text and star state loaded, and saving replaces it. Playback resumes on save or
+cancel **only if it was playing when the key was pressed**.
+
+**Captured times are rounded to whole seconds.** The file is written at
+one-second resolution, so rounding at capture keeps the in-memory time and the
+on-disk time identical and stops a note from appearing to move when the file is
+re-read. Parsing still accepts a fractional `.mmm` from a hand-written file.
 
 The offset exists because a moment is recognised as worth noting a few seconds
 after it passes.
