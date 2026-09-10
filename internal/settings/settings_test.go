@@ -358,3 +358,39 @@ func TestConcurrentUpdatesAreSerialised(t *testing.T) {
 		t.Errorf("Volume = %v, want one of the written values", v)
 	}
 }
+
+func TestNoteDefaults(t *testing.T) {
+	def := Defaults()
+
+	if def.NoteCaptureOffset != 5 {
+		t.Errorf("NoteCaptureOffset = %v, want 5", def.NoteCaptureOffset)
+	}
+	if !def.PauseWhileComposingNote {
+		t.Error("PauseWhileComposingNote should default to true")
+	}
+	if !def.ShowNoteMarks {
+		t.Error("ShowNoteMarks should default to true")
+	}
+}
+
+func TestNoteCaptureOffsetIsClamped(t *testing.T) {
+	tests := []struct {
+		in   float64
+		want float64
+	}{
+		{0, 0},
+		{5, 5},
+		{60, 60},
+		{-1, 5},
+		{600, 5},
+	}
+
+	for _, tc := range tests {
+		s := Defaults()
+		s.NoteCaptureOffset = tc.in
+		s.Normalise()
+		if s.NoteCaptureOffset != tc.want {
+			t.Errorf("offset %v normalised to %v, want %v", tc.in, s.NoteCaptureOffset, tc.want)
+		}
+	}
+}

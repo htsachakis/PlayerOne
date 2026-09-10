@@ -43,6 +43,11 @@ type Entry struct {
 	Position float64 `json:"position"`
 	Duration float64 `json:"duration"`
 
+	// NotesPath is a notes file the user chose for this video, set only when it
+	// is not the default location beside the file. Remembering it means the
+	// manual re-attach after a read-only folder is a one-time cost.
+	NotesPath string `json:"notesPath,omitempty"`
+
 	// UpdatedAt orders the recent-files list.
 	UpdatedAt time.Time `json:"updatedAt"`
 
@@ -192,6 +197,32 @@ func (s *Store) Record(path, title string, position, duration float64) error {
 func (s *Store) Forget(path string) error {
 	s.mu.Lock()
 	delete(s.entries, key(path))
+	snapshot := s.snapshotLocked()
+	s.mu.Unlock()
+
+	return s.save(snapshot)
+}
+
+// SetNotesPath remembers which notes file belongs to a video.
+//
+// An empty path clears the binding, returning the video to the default location
+// beside itself.
+func (s *Store) SetNotesPath(path, notesPath string) error {
+	if path == "" {
+		return nil
+	}
+
+	s.mu.Lock()
+	k := key(path)
+	entry, exists := s.entries[k]
+	if !exists {
+		entry.Path = path
+		entry.Filename = filepath.Base(path)
+		entry.UpdatedAt = time.Now()
+	}
+	entry.NotesPath = notesPath
+	s.entries[k] = entry
+	s.pruneLocked()
 	snapshot := s.snapshotLocked()
 	s.mu.Unlock()
 

@@ -411,3 +411,44 @@ func TestConcurrentRecordsDoNotCorruptTheFile(t *testing.T) {
 		t.Fatalf("history file was corrupted by concurrent writes: %v", err)
 	}
 }
+
+func TestSetNotesPathSurvivesRecord(t *testing.T) {
+	dir := t.TempDir()
+	store, err := NewStore(dir)
+	if err != nil {
+		t.Fatalf("NewStore: %v", err)
+	}
+
+	video := filepath.Join(dir, "lesson.mp4")
+	notes := filepath.Join(dir, "elsewhere.notes")
+
+	if err := store.SetNotesPath(video, notes); err != nil {
+		t.Fatalf("SetNotesPath: %v", err)
+	}
+
+	// A later position update must not wipe the binding.
+	if err := store.Record(video, "Lesson", 600, 3600); err != nil {
+		t.Fatalf("Record: %v", err)
+	}
+
+	entry, ok := store.Lookup(video)
+	if !ok {
+		t.Fatal("the entry disappeared")
+	}
+	if entry.NotesPath != notes {
+		t.Errorf("NotesPath = %q, want %q", entry.NotesPath, notes)
+	}
+
+	// And it must survive a reload from disk.
+	reopened, err := NewStore(dir)
+	if err != nil {
+		t.Fatalf("NewStore: %v", err)
+	}
+	again, ok := reopened.Lookup(video)
+	if !ok {
+		t.Fatal("the entry did not persist")
+	}
+	if again.NotesPath != notes {
+		t.Errorf("persisted NotesPath = %q, want %q", again.NotesPath, notes)
+	}
+}

@@ -26,6 +26,16 @@ type Settings struct {
 	AutoResume       bool `json:"autoResume"`
 	FollowTranscript bool `json:"followTranscript"`
 
+	// NoteCaptureOffset is how far before the current position a note is
+	// stamped, in seconds. A moment is recognised as worth noting a few seconds
+	// after it has passed. Zero disables the adjustment.
+	NoteCaptureOffset float64 `json:"noteCaptureOffset"`
+	// PauseWhileComposingNote pauses playback while the note composer is open,
+	// so the video does not run on while the viewer types.
+	PauseWhileComposingNote bool `json:"pauseWhileComposingNote"`
+	// ShowNoteMarks draws a tick on the seek bar for each note.
+	ShowNoteMarks bool `json:"showNoteMarks"`
+
 	SidePanelVisible bool `json:"sidePanelVisible"`
 	SidePanelWidth   int  `json:"sidePanelWidth"`
 
@@ -76,6 +86,11 @@ func Defaults() Settings {
 		PlaybackSpeed:    1.0,
 		AutoResume:       false,
 		FollowTranscript: true,
+
+		NoteCaptureOffset:       5,
+		PauseWhileComposingNote: true,
+		ShowNoteMarks:           true,
+
 		SidePanelVisible: true,
 		SidePanelWidth:   380,
 		SubtitleDelay:    0,
@@ -102,6 +117,11 @@ func (s *Settings) Normalise() {
 	}
 	if s.SidePanelWidth < MinPanelWidth || s.SidePanelWidth > MaxPanelWidth {
 		s.SidePanelWidth = def.SidePanelWidth
+	}
+	// A negative offset would stamp notes in the future, and anything past a
+	// minute is a typo rather than a preference.
+	if !(s.NoteCaptureOffset >= 0) || s.NoteCaptureOffset > 60 {
+		s.NoteCaptureOffset = def.NoteCaptureOffset
 	}
 	// mpv accepts large delays, but values beyond a minute are certainly a
 	// mistake rather than a preference.
