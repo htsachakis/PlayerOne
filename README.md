@@ -2,7 +2,8 @@
 
 <img src="build/branding/logo.png" alt="PlayerOne — Watch. Learn. Explore." width="640">
 
-**A local video player for tutorials and courses, with chapters and a searchable transcript.**
+**A local video player for tutorials and courses, with chapters, a searchable
+transcript, and notes you can take as you watch.**
 
 Windows 11 · Go + Wails · mpv
 
@@ -12,8 +13,9 @@ Windows 11 · Go + Wails · mpv
 
 PlayerOne plays video files on your own machine and gives them the thing that
 makes a tutorial watchable online: a panel beside the video listing its
-**chapters**, its full **transcript**, and what the file actually **is**. Click a
-chapter or a line of transcript and the video jumps there.
+**chapters**, its full **transcript**, your own **notes**, and what the file
+actually **is**. Click a chapter, a line of transcript or a note and the video
+jumps there.
 
 It uses **mpv** for playback, so it plays whatever mpv plays — MKV with a dozen
 audio tracks, embedded subtitles, odd codecs — without you converting anything.
@@ -286,6 +288,7 @@ PlayerOne/
 ├── api_media.go             Opening files, file dialogs, diagnostics
 ├── api_playlist.go          Queue, shuffle, repeat, folder scanning
 ├── api_transcript.go        Transcript building and caching
+├── api_notes.go             Timestamped notes, and the file they live in
 ├── api_settings.go          Settings, recent files, video window placement
 ├── api_diagnostics.go       Interface errors routed into the log
 ├── internal/
@@ -300,6 +303,7 @@ PlayerOne/
 │   ├── transcript/          SRT and WebVTT parsing, tag cleaning
 │   ├── settings/            Preferences
 │   ├── history/             Watch history and resume positions
+│   ├── notes/               The .notes file format, and binding one to a video
 │   ├── playlist/            The queue, shuffle and repeat rules
 │   └── appdir/              Where state lives, and atomic writes
 ├── frontend/src/
@@ -390,6 +394,44 @@ re-run ffmpeg. The cache is dropped when the file changes.
 Extraction from a three-hour file takes a few seconds; the panel shows a
 loading state while it works.
 
+## Where notes are stored
+
+Notes do not live in a database of PlayerOne's. They are written to a plain-text
+file beside the video, named after it:
+
+```
+lesson-04.mp4
+lesson-04.mp4.notes
+```
+
+The video's full name is kept, so `lesson-04.mp4` and `lesson-04.mkv` do not
+fight over one file. Inside:
+
+```
+# PlayerOne notes - lesson-04.mp4
+
+00:00:42
+00:12:34 * Closures capture the variable, not the value
+00:18:05 The bit about defer running LIFO - rewatch,
+         it is the second example that actually shows it
+```
+
+A timestamp starts a note. Anything else continues the one above it. A `*` after
+the timestamp means starred, and a note with no text at all is a bookmark.
+`MM:SS` and `H:MM:SS` both parse, so a file written by hand works; PlayerOne
+writes `HH:MM:SS` back.
+
+Being a plain file is the point. It travels with the video, opens in Notepad,
+greps, diffs in git, and can be handed to somebody else. Edit it while the video
+is playing and the panel picks the change up within a couple of seconds.
+
+**When the folder cannot be written to** - a read-only course disc, a locked-down
+share - PlayerOne says so the moment you save your first note, offers to keep the
+notes wherever you choose, and remembers that location against the video so you
+do not have to reattach it every session. The note you just typed is never lost
+to a failed write. Because the two files are then separate, moving the video
+means loading its notes again by hand.
+
 ## Updates
 
 PlayerOne checks GitHub for a newer release **on every launch**, a few seconds
@@ -440,11 +482,16 @@ Everything PlayerOne remembers lives in:
 | File | Contents |
 |---|---|
 | `settings.json` | Volume, speed, panel width, auto-resume, track language preferences, window geometry |
-| `history.json` | The last 20 files and where you stopped in each |
+| `history.json` | The last 20 files, where you stopped in each, and any notes file you chose by hand |
 | `playlist.json` | The current queue, shuffle and repeat |
 | `playerone.log` | The current session's log |
 
 `settings.json` also records whether update checking is on and when it last ran.
+
+Notes are the one exception, and deliberately so: they are written beside the
+video as `<video>.notes` rather than here, because notes that do not travel with
+the video they describe are worth much less. See
+[Where notes are stored](#where-notes-are-stored).
 
 Nothing is written next to the executable, so an installed copy under
 `Program Files` and a portable copy on a USB stick both work correctly.
@@ -601,9 +648,6 @@ labelling. Nothing needs a real video: the tests that can use one skip when
 
 Not implemented, in rough order of usefulness:
 
-- **Bookmarks** — timestamped notes per file. `internal/history` already keys by
-  path, which is the same key bookmarks would use, so this is a new package and
-  a fifth panel tab rather than a change to anything existing.
 - Thumbnail previews when hovering the seek bar, and chapter thumbnails
 - A/B repeat for drilling a passage
 - Frame stepping and screenshot capture
