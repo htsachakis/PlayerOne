@@ -159,7 +159,6 @@ export interface Settings {
   audioDelay: number;
   subtitleScale: number;
   checkForUpdates: boolean;
-  lastUpdateCheck: number;
   skippedVersion: string;
   window: WindowState;
   logLevel: string;

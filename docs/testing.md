@@ -201,7 +201,7 @@ PLAYERONE_LOG=debug dist\PlayerOne-1.0.0-windows-amd64\PlayerOne.exe
 
 | # | Test | Expected |
 |---|---|---|
-| 13.1 | ⬜ Look at the window title | `PlayerOne v1.0.1` |
+| 13.1 | ⬜ Look at the window title | `PlayerOne v1.0.3` |
 | 13.2 | ⬜ **Info ▸ PlayerOne** | Version, commit and build date |
 | 13.3 | ⬜ Settings drawer | The version, and a **Check now** button |
 | 13.4 | ⬜ **Check now** while on the latest | "PlayerOne x.y.z is the latest version." |
@@ -210,6 +210,8 @@ PLAYERONE_LOG=debug dist\PlayerOne-1.0.0-windows-amd64\PlayerOne.exe
 | 13.7 | ⬜ **Update now** | Progress bar, then PlayerOne closes and the installer runs |
 | 13.8 | ⬜ Finish the installer | PlayerOne reopens on the new version |
 | 13.9 | ⬜ **Skip this version**, restart | Not offered again |
+| 13.9b | ⬜ **Check now** in settings, then **Update now** | Installs; it must not answer "check for updates first" |
+| 13.9c | ⬜ Restart twice within a few minutes on an old version | The bar appears every time, not once a day |
 | 13.10 | ⬜ Turn update checking off, restart | No check; `settings.json` shows `checkForUpdates: false` |
 | 13.11 | ⬜ Run the **portable** copy on an old version | Offers the release page, not an install |
 | 13.12 | ⬜ First line of the log | Names the version, commit and build date |

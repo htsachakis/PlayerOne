@@ -386,8 +386,8 @@ loading state while it works.
 
 ## Updates
 
-PlayerOne checks GitHub for a newer release **at most once a day**, a few
-seconds after launch. When one exists, a bar appears under the title bar
+PlayerOne checks GitHub for a newer release **on every launch**, a few seconds
+after the window appears. When one exists, a bar appears under the title bar
 offering *What's new*, *Update now*, *Skip this version* and *Later*.
 
 *Update now* downloads the installer, **verifies it against the `SHA256SUMS.txt`

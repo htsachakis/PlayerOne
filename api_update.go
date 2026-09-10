@@ -19,13 +19,6 @@ const (
 	eventUpdateProgress  = "update:progress"
 )
 
-// updateCheckInterval is the minimum gap between automatic checks.
-//
-// Once a day is frequent enough to notice a release within a day of it landing,
-// and infrequent enough that restarting the player repeatedly cannot get the
-// user rate-limited by GitHub.
-const updateCheckInterval = 24 * time.Hour
-
 // startupUpdateDelay lets the application settle before it goes to the network.
 const startupUpdateDelay = 5 * time.Second
 
@@ -53,8 +46,8 @@ func (a *App) Version() UpdateInfo {
 
 // CheckForUpdates asks GitHub whether a newer release exists.
 //
-// force is set when the user asks explicitly, which bypasses both the once-a-day
-// limit and any version they previously chose to skip.
+// force is set when the user asks explicitly, which bypasses both the setting
+// that turns checking off and any version they previously chose to skip.
 func (a *App) CheckForUpdates(force bool) (UpdateInfo, error) {
 	info := a.Version()
 
@@ -73,7 +66,16 @@ func (a *App) CheckForUpdates(force bool) (UpdateInfo, error) {
 		return info, fmt.Errorf("%v", err)
 	}
 
-	a.persist(func(s *settingsMutation) { s.LastUpdateCheck = time.Now().Unix() })
+	// Remember what the check found. InstallUpdate acts on this rather than on
+	// anything the interface sends it, so a release can only be installed after
+	// PlayerOne has fetched and compared it itself - and every path that offers
+	// an update, the startup check and the Check now button alike, records it
+	// here.
+	if status.Available && status.Latest != nil {
+		a.setLatestRelease(status.Latest)
+	} else {
+		a.setLatestRelease(nil)
+	}
 
 	// A skipped version stays skipped until something newer appears or the user
 	// checks by hand.
@@ -213,19 +215,14 @@ func (a *App) runStartupUpdateCheck() {
 		return
 	}
 
-	since := time.Since(time.Unix(current.LastUpdateCheck, 0))
-	if current.LastUpdateCheck > 0 && since < updateCheckInterval {
-		a.log.Debug("app: update checked %s ago; next check is not due yet", since.Round(time.Minute))
-		return
-	}
-
+	// Every launch, not once a day: a release the viewer already knows about is
+	// worth offering again, and one request to GitHub per start is nothing.
 	info, err := a.CheckForUpdates(false)
 	if err != nil {
 		return // already logged; a failed check must not disturb the viewer
 	}
 
 	if info.Status.Available && info.Status.Latest != nil {
-		a.setLatestRelease(info.Status.Latest)
 		a.emit(eventUpdateAvailable, info)
 	}
 }

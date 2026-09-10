@@ -47,9 +47,6 @@ type Settings struct {
 	// is the only network access the application makes, so it is a setting
 	// rather than a hidden behaviour.
 	CheckForUpdates bool `json:"checkForUpdates"`
-	// LastUpdateCheck is a Unix timestamp, kept so the check happens at most
-	// once a day rather than on every launch.
-	LastUpdateCheck int64 `json:"lastUpdateCheck"`
 	// SkippedVersion is a release the user chose not to be reminded about.
 	SkippedVersion string `json:"skippedVersion"`
 

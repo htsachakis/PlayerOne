@@ -545,7 +545,6 @@ export namespace settings {
 	    audioDelay: number;
 	    subtitleScale: number;
 	    checkForUpdates: boolean;
-	    lastUpdateCheck: number;
 	    skippedVersion: string;
 	    window: WindowState;
 	    logLevel: string;
@@ -569,7 +568,6 @@ export namespace settings {
 	        this.audioDelay = source["audioDelay"];
 	        this.subtitleScale = source["subtitleScale"];
 	        this.checkForUpdates = source["checkForUpdates"];
-	        this.lastUpdateCheck = source["lastUpdateCheck"];
 	        this.skippedVersion = source["skippedVersion"];
 	        this.window = this.convertValues(source["window"], WindowState);
 	        this.logLevel = source["logLevel"];

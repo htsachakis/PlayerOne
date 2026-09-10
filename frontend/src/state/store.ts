@@ -99,7 +99,6 @@ export const defaultSettings: Settings = {
   audioDelay: 0,
   subtitleScale: 1,
   checkForUpdates: true,
-  lastUpdateCheck: 0,
   skippedVersion: '',
   window: { width: 1440, height: 900, x: 0, y: 0, maximised: false, valid: false },
   logLevel: 'INFO',

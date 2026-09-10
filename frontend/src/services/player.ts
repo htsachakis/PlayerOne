@@ -275,8 +275,8 @@ export function cycleRepeat(current: RepeatMode): RepeatMode {
 /**
  * Asks the backend to check GitHub.
  *
- * force is set when the user asks explicitly, which bypasses both the
- * once-a-day limit and any version they previously chose to skip.
+ * force is set when the user asks explicitly, which bypasses both the setting
+ * that turns checking off and any version they previously chose to skip.
  */
 export async function checkForUpdates(force: boolean): Promise<UpdateInfo | undefined> {
   const info = (await guard(() => App.CheckForUpdates(force))) as UpdateInfo | undefined;
