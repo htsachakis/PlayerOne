@@ -94,9 +94,10 @@ func New(ctx context.Context, cfg Config) (*MPVPlayer, error) {
 		log:  cfg.Logger,
 		pump: make(chan pumpMsg, 64),
 		state: PlaybackState{
-			Volume: clampVolume(cfg.InitialVolume),
-			Speed:  clampSpeed(cfg.InitialSpeed),
-			Muted:  cfg.InitialMuted,
+			Volume:        clampVolume(cfg.InitialVolume),
+			Speed:         clampSpeed(cfg.InitialSpeed),
+			Muted:         cfg.InitialMuted,
+			SubtitleScale: 1,
 			Paused: true,
 			Idle:   true,
 
@@ -170,6 +171,7 @@ var observedProperties = []string{
 	"aid",
 	"sub-delay",
 	"audio-delay",
+	"sub-scale",
 	"hwdec-current",
 }
 
@@ -552,6 +554,15 @@ func (p *MPVPlayer) SetSubtitleDelay(ctx context.Context, seconds float64) error
 
 func (p *MPVPlayer) SetAudioDelay(ctx context.Context, seconds float64) error {
 	return p.setProperty(ctx, "audio-delay", mpvipc.Float(seconds))
+}
+
+// SetSubtitleScale resizes subtitles, 1 being mpv's own choice.
+//
+// sub-scale rather than sub-font-size: it is a multiplier, so it keeps its
+// meaning across files whose subtitles specify their own sizes, and it applies
+// to styled ASS subtitles as well as plain text.
+func (p *MPVPlayer) SetSubtitleScale(ctx context.Context, scale float64) error {
+	return p.setProperty(ctx, "sub-scale", mpvipc.Float(clampSubtitleScale(scale)))
 }
 
 // State returns the current snapshot.

@@ -20,6 +20,8 @@ import (
 	"playerone/internal/playlist"
 	"playerone/internal/settings"
 	"playerone/internal/tools"
+	"playerone/internal/updater"
+	"playerone/internal/version"
 	"playerone/internal/winvideo"
 )
 
@@ -50,6 +52,7 @@ type App struct {
 	history  *history.Store
 	playlist *playlist.List
 	resolver *tools.Resolver
+	updates  *updater.Client
 
 	// Tool paths, resolved once at startup. Empty means unavailable.
 	mpvPath     string
@@ -91,6 +94,11 @@ type App struct {
 	hasVideoBounds bool
 	videoVisible   bool
 
+	// pendingUpdate is the release a check found, kept so the install step acts
+	// on something PlayerOne fetched rather than on anything the interface
+	// hands back to it.
+	pendingUpdate *updater.Release
+
 	initOnce sync.Once
 	stopOnce sync.Once
 	stopCh   chan struct{}
@@ -129,7 +137,7 @@ func (a *App) startup(ctx context.Context) {
 		a.log.Error("app: no configuration directory available: %v", dirErr)
 	}
 
-	a.log.Info("app: %s starting", branding.Name)
+	a.log.Info("app: %s %s starting", branding.Name, version.Detail())
 
 	var err error
 	if a.settings, err = settings.DefaultStore(); err != nil {
@@ -147,6 +155,8 @@ func (a *App) startup(ctx context.Context) {
 	if envLevel == "" {
 		a.log.SetLevel(logging.ParseLevel(a.settings.Get().LogLevel))
 	}
+
+	a.updates = updater.New()
 
 	a.resolveTools()
 }
@@ -245,8 +255,9 @@ func (a *App) initialiseEngine() {
 	// The interface has almost certainly already reported where the video goes.
 	a.applyPendingVideoLayout()
 
-	a.wg.Add(1)
+	a.wg.Add(2)
 	go a.runResumeSaver()
+	go a.runStartupUpdateCheck()
 
 	a.log.Info("app: engine ready")
 	a.emit(eventReady, a.Diagnostics())
@@ -544,6 +555,9 @@ func (a *App) applyPreferredTracks() {
 	if current.AudioDelay != 0 {
 		_ = engine.SetAudioDelay(a.ctx, current.AudioDelay)
 	}
+	if current.SubtitleScale != 1 && current.SubtitleScale > 0 {
+		_ = engine.SetSubtitleScale(a.ctx, current.SubtitleScale)
+	}
 }
 
 // subtitlesOff is the sentinel stored in settings when the user turned subtitles
@@ -650,12 +664,22 @@ func (a *App) saveResumePosition() {
 // The list is intentionally permissive: mpv plays far more than this, and the
 // check only exists so that dropping a .zip produces a clear message instead of
 // an mpv failure.
+// This list is mirrored by PLAYERONE_EACH_EXT in
+// build/windows/installer/project.nsi, which registers the same extensions with
+// Windows. Add to one and add to the other, or the installer will offer to open
+// something the application then refuses.
 var mediaExtensions = map[string]bool{
+	// Video
 	".mkv": true, ".mp4": true, ".webm": true, ".mov": true, ".avi": true,
-	".m4v": true, ".mpg": true, ".mpeg": true, ".ts": true, ".m2ts": true,
-	".wmv": true, ".flv": true, ".ogv": true, ".3gp": true, ".vob": true,
-	".mp3": true, ".m4a": true, ".flac": true, ".opus": true, ".wav": true,
-	".aac": true, ".ogg": true, ".wma": true,
+	".m4v": true, ".mpg": true, ".mpeg": true, ".m2v": true, ".ts": true,
+	".m2ts": true, ".mts": true, ".wmv": true, ".asf": true, ".flv": true,
+	".f4v": true, ".ogv": true, ".3gp": true, ".3g2": true, ".vob": true,
+	".divx": true, ".rmvb": true, ".mxf": true,
+
+	// Audio
+	".mp3": true, ".m4a": true, ".m4b": true, ".flac": true, ".opus": true,
+	".wav": true, ".aac": true, ".ogg": true, ".oga": true, ".wma": true,
+	".mka": true, ".ape": true, ".alac": true, ".aiff": true, ".dsf": true,
 }
 
 func looksLikeMediaFile(path string) bool {

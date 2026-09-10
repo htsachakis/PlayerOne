@@ -45,13 +45,16 @@ audio tracks, embedded subtitles, odd codecs — without you converting anything
 - Turn subtitles off entirely
 - Load external `.srt`, `.ass`, `.ssa`, `.vtt` and more; files sitting next to
   the video are picked up automatically
-- Subtitle and audio delay adjustment
+- Adjust subtitle **size** and subtitle/audio **delay**
 
 **Getting files in**
 
 - File ▸ Open, drag and drop, or a path on the command line
 - Drop several videos, or a folder, to build a playlist
+- Appears under Windows' **Open with** for 36 media formats, without taking over
+  anything you already use
 - Recent files with the position you reached in each
+- Tells you when a new version is out, and installs it for you
 
 ## Screenshots
 
@@ -367,6 +370,42 @@ re-run ffmpeg. The cache is dropped when the file changes.
 Extraction from a three-hour file takes a few seconds; the panel shows a
 loading state while it works.
 
+## Updates
+
+PlayerOne checks GitHub for a newer release **at most once a day**, a few
+seconds after launch. When one exists, a bar appears under the title bar
+offering *What's new*, *Update now*, *Skip this version* and *Later*.
+
+*Update now* downloads the installer, **verifies it against the `SHA256SUMS.txt`
+published with the release**, then closes PlayerOne so its files can be replaced
+and reopens it when the installer finishes. A download whose checksum does not
+match is deleted and refused — the updater runs an executable, so it has to be
+able to prove what it is running.
+
+Worth knowing:
+
+- This is the **only** network access PlayerOne makes. It contacts
+  `api.github.com` and nothing else. Turn it off with **Settings ▸ Check for
+  updates automatically**, or check by hand with **Check now**.
+- The **portable** copy will not install over itself — it has no installer, and
+  running one would leave a second copy in `Program Files` and this folder
+  stale. It points you at the release page instead.
+- A build made with plain `go build` reports itself as a development build and
+  is never offered an update, so a working tree cannot be replaced by a release.
+
+The running version is shown in the window title, in **Info ▸ PlayerOne**, in
+the settings drawer, and on the first line of the log.
+
+## Opening files from Explorer
+
+The installer registers PlayerOne so it appears under **Open with** for 36 video
+and audio formats, and in **Settings ▸ Default apps** if you want to make it the
+default for something.
+
+It deliberately does **not** claim any extension by itself. Whatever opens
+`.mkv` today was your choice, and an installer that overrules that is a bad
+neighbour. Uninstalling removes every registry entry it added.
+
 ## Settings location
 
 Everything PlayerOne remembers lives in:
@@ -381,6 +420,8 @@ Everything PlayerOne remembers lives in:
 | `history.json` | The last 20 files and where you stopped in each |
 | `playlist.json` | The current queue, shuffle and repeat |
 | `playerone.log` | The current session's log |
+
+`settings.json` also records whether update checking is on and when it last ran.
 
 Nothing is written next to the executable, so an installed copy under
 `Program Files` and a portable copy on a USB stick both work correctly.

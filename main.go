@@ -20,6 +20,7 @@ import (
 
 	"playerone/internal/branding"
 	"playerone/internal/settings"
+	"playerone/internal/version"
 )
 
 //go:embed all:frontend/dist
@@ -37,7 +38,7 @@ func main() {
 	geometry := savedWindowGeometry()
 
 	err := wails.Run(&options.App{
-		Title:  branding.Name,
+		Title:  windowTitle(),
 		Width:  geometry.Width,
 		Height: geometry.Height,
 		MinWidth:  900,
@@ -82,6 +83,19 @@ func main() {
 		fmt.Fprintf(os.Stderr, "%s failed to start: %v\n", branding.Name, err)
 		os.Exit(1)
 	}
+}
+
+// windowTitle names the window, including the version for a release build.
+//
+// The title bar is the one place the version is visible without opening
+// anything, which is what makes "which version are you running?" answerable in
+// a screenshot. A development build says so rather than showing a number it
+// does not have.
+func windowTitle() string {
+	if version.IsRelease() {
+		return branding.Name + " v" + version.Version
+	}
+	return branding.Name + " (development build)"
 }
 
 // savedWindowGeometry reads the remembered window size, falling back to the

@@ -106,11 +106,30 @@ jobs:
           makensis /VERSION
           if ($LASTEXITCODE -ne 0) { throw 'makensis is still not usable.' }
 
+      # wails.json carries the version the installer reports to Windows. Left
+      # alone it would say 1.0.0 for every release, so Add or Remove Programs
+      # and the file properties would disagree with the application itself.
+      - name: Stamp the product version
+        shell: pwsh
+        run: |
+          $json = Get-Content wails.json -Raw | ConvertFrom-Json
+          $json.info.productVersion = '${{ steps.version.outputs.version }}'
+          $json | ConvertTo-Json -Depth 10 | Set-Content wails.json -Encoding utf8
+          Write-Host "wails.json productVersion = $($json.info.productVersion)"
+
       - name: Build the application and installer
         shell: pwsh
         run: |
-          wails build -platform windows/amd64 -clean -nsis `
-            -ldflags "-X main.version=${{ steps.version.outputs.version }}"
+          # The version is compiled in: the updater compares it against the
+          # latest release, and a build that cannot say what it is would either
+          # never update or offer to update itself forever.
+          $ldflags = @(
+            "-X playerone/internal/version.Version=${{ steps.version.outputs.version }}"
+            "-X playerone/internal/version.Commit=${{ github.sha }}"
+            "-X playerone/internal/version.Date=$(Get-Date -Format 'yyyy-MM-dd')"
+          ) -join ' '
+
+          wails build -platform windows/amd64 -clean -nsis -ldflags "$ldflags"
 
       - name: Assemble the portable package
         shell: pwsh
@@ -146,7 +165,19 @@ jobs:
           }
           Move-Item $installer.FullName "dist/PlayerOne-$version-windows-amd64-installer.exe"
 
+          # Checksums are what makes the in-app updater safe: it downloads an
+          # executable and runs it, so it must be able to verify that the bytes
+          # are the ones this build produced. Written in sha256sum's format,
+          # which is what the updater parses.
+          $lines = Get-ChildItem dist -File | Where-Object { $_.Name -ne 'SHA256SUMS.txt' } | ForEach-Object {
+            $hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower()
+            "$hash  $($_.Name)"
+          }
+          $lines | Set-Content -Path 'dist/SHA256SUMS.txt' -Encoding ascii
+
           Get-ChildItem dist -File | ForEach-Object { '{0,-60} {1,12:N0} bytes' -f $_.Name, $_.Length }
+          Write-Host ''
+          Get-Content dist/SHA256SUMS.txt
 
       - name: Upload the build artifacts
         uses: actions/upload-artifact@v4
@@ -176,5 +207,8 @@ jobs:
 
             Settings, watch history and the playlist are stored in
             `%APPDATA%\PlayerOne` and are kept when you uninstall.
+
+            Verify a download against `SHA256SUMS.txt`. PlayerOne's built-in
+            updater checks it automatically before installing.
 
             Third-party licences: see `THIRD-PARTY.md` in the download.

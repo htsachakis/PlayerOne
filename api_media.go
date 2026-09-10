@@ -95,9 +95,9 @@ func (a *App) ChooseFile() (string, error) {
 		Filters: []wailsruntime.FileFilter{
 			{
 				DisplayName: "Video files",
-				Pattern:     "*.mkv;*.mp4;*.webm;*.mov;*.avi;*.m4v;*.ts;*.m2ts;*.mpg;*.mpeg;*.wmv;*.flv;*.ogv",
+				Pattern:     "*.mkv;*.mp4;*.webm;*.mov;*.avi;*.m4v;*.mpg;*.mpeg;*.m2v;*.ts;*.m2ts;*.mts;*.wmv;*.asf;*.flv;*.f4v;*.ogv;*.3gp;*.3g2;*.vob;*.divx;*.rmvb;*.mxf",
 			},
-			{DisplayName: "Audio files", Pattern: "*.mp3;*.m4a;*.flac;*.opus;*.wav;*.aac;*.ogg"},
+			{DisplayName: "Audio files", Pattern: "*.mp3;*.m4a;*.m4b;*.flac;*.opus;*.wav;*.aac;*.ogg;*.oga;*.wma;*.mka;*.ape;*.aiff"},
 			{DisplayName: "All files", Pattern: "*.*"},
 		},
 	})

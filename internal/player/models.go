@@ -86,6 +86,10 @@ type PlaybackState struct {
 	SubtitleDelay float64 `json:"subtitleDelay"`
 	AudioDelay    float64 `json:"audioDelay"`
 
+	// SubtitleScale multiplies the subtitle font size. 1 is the size mpv would
+	// use on its own.
+	SubtitleScale float64 `json:"subtitleScale"`
+
 	// HWDec names the active hardware decoder, or "no" when decoding on the CPU.
 	// Surfaced in the Info tab because it is the first thing worth checking when
 	// playback stutters.

@@ -25,7 +25,13 @@ export class InfoTab {
 
   private render(state: AppState): void {
     const info = state.mediaInfo;
-    const signature = `${info?.path ?? ''}|${info?.duration ?? 0}|${state.playback.hwdec}|${state.diagnostics?.mpvPath ?? ''}`;
+    const signature = [
+      info?.path ?? '',
+      info?.duration ?? 0,
+      state.playback.hwdec,
+      state.diagnostics?.mpvPath ?? '',
+      state.update?.detail ?? '',
+    ].join('|');
     if (signature === this.signature) return;
     this.signature = signature;
 
@@ -120,6 +126,7 @@ export class InfoTab {
 
     this.root.append(
       section('PlayerOne', [
+        row('Version', state.update?.detail || state.update?.version || ''),
         row('Media engine', diag.mpvPath || 'not found'),
         row('ffmpeg', diag.ffmpegPath || 'not found — transcripts from embedded subtitles are unavailable'),
         row('ffprobe', diag.ffprobePath || 'not found — some file details are unavailable'),

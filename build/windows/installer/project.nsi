@@ -54,6 +54,14 @@ ManifestDPIAware true
 !define MUI_UNICON "..\icon.ico"
 # !define MUI_WELCOMEFINISHPAGE_BITMAP "resources\leftimage.bmp" #Include this to add a bitmap on the left side of the Welcome Page. Must be a size of 164x314
 !define MUI_FINISHPAGE_NOAUTOCLOSE # Wait on the INSTFILES page so the user can take a look into the details of the installation steps
+
+# Offer to start PlayerOne when the installer finishes, ticked by default. This
+# is what completes the in-app update: PlayerOne quits so its files can be
+# replaced, and comes back on its own rather than leaving the viewer staring at
+# a closed application.
+!define MUI_FINISHPAGE_RUN "$INSTDIR\${PRODUCT_EXECUTABLE}"
+!define MUI_FINISHPAGE_RUN_TEXT "Start ${INFO_PRODUCTNAME}"
+
 !define MUI_ABORTWARNING # This will warn the user if they exit from the installer.
 
 !insertmacro MUI_PAGE_WELCOME # Welcome to the installer page.
@@ -81,6 +89,79 @@ Function .onInit
    !insertmacro wails.checkArchitecture
 FunctionEnd
 
+####
+## Registering PlayerOne as a player Windows knows about.
+##
+## The goal is for PlayerOne to appear under "Open with" for media files, and in
+## Settings > Default apps so it can be chosen deliberately. It must NOT take
+## over any extension by itself: whatever already opens .mkv was the user's
+## choice, and an installer that silently overrules it is a bad neighbour. That
+## is why Wails' own wails.associateFiles is not used here - it writes the
+## default handler for each extension.
+##
+## Two registrations do the polite version:
+##   * Applications\PlayerOne.exe with SupportedTypes  -> "Choose another app"
+##   * .ext\OpenWithProgIds\<ProgID>                   -> the "Open with" list
+## Neither touches the default.
+####
+
+!define PLAYERONE_PROGID "PlayerOne.Media"
+
+; Adds one extension to the Open-with list, leaving its default alone.
+!macro PLAYERONE_REGISTER_EXT EXT
+  WriteRegStr SHELL_CONTEXT "Software\Classes\${EXT}\OpenWithProgIds" "${PLAYERONE_PROGID}" ""
+  WriteRegStr SHELL_CONTEXT "Software\Classes\Applications\${PRODUCT_EXECUTABLE}\SupportedTypes" "${EXT}" ""
+  WriteRegStr SHELL_CONTEXT "Software\${INFO_PRODUCTNAME}\Capabilities\FileAssociations" "${EXT}" "${PLAYERONE_PROGID}"
+!macroend
+
+!macro PLAYERONE_UNREGISTER_EXT EXT
+  DeleteRegValue SHELL_CONTEXT "Software\Classes\${EXT}\OpenWithProgIds" "${PLAYERONE_PROGID}"
+!macroend
+
+; Mirrors mediaExtensions in app.go. Add to one and add to the other, or the
+; installer will offer to open something the application then refuses.
+!macro PLAYERONE_EACH_EXT MACRO
+  ; Video
+  !insertmacro ${MACRO} ".mkv"
+  !insertmacro ${MACRO} ".mp4"
+  !insertmacro ${MACRO} ".webm"
+  !insertmacro ${MACRO} ".mov"
+  !insertmacro ${MACRO} ".avi"
+  !insertmacro ${MACRO} ".m4v"
+  !insertmacro ${MACRO} ".mpg"
+  !insertmacro ${MACRO} ".mpeg"
+  !insertmacro ${MACRO} ".m2v"
+  !insertmacro ${MACRO} ".ts"
+  !insertmacro ${MACRO} ".m2ts"
+  !insertmacro ${MACRO} ".mts"
+  !insertmacro ${MACRO} ".wmv"
+  !insertmacro ${MACRO} ".asf"
+  !insertmacro ${MACRO} ".flv"
+  !insertmacro ${MACRO} ".f4v"
+  !insertmacro ${MACRO} ".ogv"
+  !insertmacro ${MACRO} ".3gp"
+  !insertmacro ${MACRO} ".3g2"
+  !insertmacro ${MACRO} ".vob"
+  !insertmacro ${MACRO} ".divx"
+  !insertmacro ${MACRO} ".rmvb"
+  !insertmacro ${MACRO} ".mxf"
+
+  ; Audio
+  !insertmacro ${MACRO} ".mp3"
+  !insertmacro ${MACRO} ".m4a"
+  !insertmacro ${MACRO} ".m4b"
+  !insertmacro ${MACRO} ".flac"
+  !insertmacro ${MACRO} ".opus"
+  !insertmacro ${MACRO} ".wav"
+  !insertmacro ${MACRO} ".aac"
+  !insertmacro ${MACRO} ".ogg"
+  !insertmacro ${MACRO} ".oga"
+  !insertmacro ${MACRO} ".wma"
+  !insertmacro ${MACRO} ".mka"
+  !insertmacro ${MACRO} ".ape"
+  !insertmacro ${MACRO} ".aiff"
+!macroend
+
 Section
     !insertmacro wails.setShellContext
 
@@ -107,7 +188,32 @@ Section
     CreateShortcut "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
     CreateShortCut "$DESKTOP\${INFO_PRODUCTNAME}.lnk" "$INSTDIR\${PRODUCT_EXECUTABLE}"
 
-    !insertmacro wails.associateFiles
+    ; --- Make Windows aware that PlayerOne can open media files ---
+
+    ; The ProgID: how PlayerOne opens a file, and what the entry is called.
+    WriteRegStr SHELL_CONTEXT "Software\Classes\${PLAYERONE_PROGID}" "" "Video file"
+    WriteRegStr SHELL_CONTEXT "Software\Classes\${PLAYERONE_PROGID}" "FriendlyTypeName" "Video file"
+    WriteRegStr SHELL_CONTEXT "Software\Classes\${PLAYERONE_PROGID}\DefaultIcon" "" "$INSTDIR\${PRODUCT_EXECUTABLE},0"
+    WriteRegStr SHELL_CONTEXT "Software\Classes\${PLAYERONE_PROGID}\shell\open" "FriendlyAppName" "${INFO_PRODUCTNAME}"
+    WriteRegStr SHELL_CONTEXT "Software\Classes\${PLAYERONE_PROGID}\shell\open\command" "" '"$INSTDIR\${PRODUCT_EXECUTABLE}" "%1"'
+
+    ; The application entry, which is what "Choose another app" reads.
+    WriteRegStr SHELL_CONTEXT "Software\Classes\Applications\${PRODUCT_EXECUTABLE}" "FriendlyAppName" "${INFO_PRODUCTNAME}"
+    WriteRegStr SHELL_CONTEXT "Software\Classes\Applications\${PRODUCT_EXECUTABLE}\DefaultIcon" "" "$INSTDIR\${PRODUCT_EXECUTABLE},0"
+    WriteRegStr SHELL_CONTEXT "Software\Classes\Applications\${PRODUCT_EXECUTABLE}\shell\open\command" "" '"$INSTDIR\${PRODUCT_EXECUTABLE}" "%1"'
+
+    ; Capabilities, so PlayerOne can be picked in Settings > Default apps.
+    ; Listing an association here offers it; it does not take it.
+    WriteRegStr SHELL_CONTEXT "Software\${INFO_PRODUCTNAME}\Capabilities" "ApplicationName" "${INFO_PRODUCTNAME}"
+    WriteRegStr SHELL_CONTEXT "Software\${INFO_PRODUCTNAME}\Capabilities" "ApplicationDescription" "Plays local videos with chapters and a searchable transcript."
+    WriteRegStr SHELL_CONTEXT "Software\RegisteredApplications" "${INFO_PRODUCTNAME}" "Software\${INFO_PRODUCTNAME}\Capabilities"
+
+    !insertmacro PLAYERONE_EACH_EXT PLAYERONE_REGISTER_EXT
+
+    ; Explorer caches associations; without this the new entry only appears
+    ; after a sign-out.
+    System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'
+
     !insertmacro wails.associateCustomProtocols
 
     !insertmacro wails.writeUninstaller
@@ -125,6 +231,23 @@ Section "uninstall"
 
     Delete "$SMPROGRAMS\${INFO_PRODUCTNAME}.lnk"
     Delete "$DESKTOP\${INFO_PRODUCTNAME}.lnk"
+
+    ; --- Undo the media registration ---
+    ;
+    ; Every key written during install is removed. Leaving an OpenWithProgIds
+    ; entry behind would keep offering an application that is no longer on the
+    ; machine, and a stale ProgID would leave files showing PlayerOne's icon
+    ; with nothing to open them.
+    !insertmacro PLAYERONE_EACH_EXT PLAYERONE_UNREGISTER_EXT
+
+    DeleteRegKey SHELL_CONTEXT "Software\Classes\${PLAYERONE_PROGID}"
+    DeleteRegKey SHELL_CONTEXT "Software\Classes\Applications\${PRODUCT_EXECUTABLE}"
+    DeleteRegValue SHELL_CONTEXT "Software\RegisteredApplications" "${INFO_PRODUCTNAME}"
+    DeleteRegKey SHELL_CONTEXT "Software\${INFO_PRODUCTNAME}"
+
+    ; Tell Explorer to forget its cached associations, so the entry disappears
+    ; immediately rather than at the next sign-out.
+    System::Call 'shell32::SHChangeNotify(i 0x08000000, i 0, p 0, p 0)'
 
     !insertmacro wails.unassociateFiles
     !insertmacro wails.unassociateCustomProtocols

@@ -6,6 +6,7 @@ import './styles/panel.css';
 import { store } from './state/store';
 import type { AppState } from './state/store';
 import {
+  appVersion,
   diagnostics,
   listen,
   handleDrop,
@@ -19,6 +20,7 @@ import {
 import { OnFileDrop } from '../wailsjs/runtime/runtime';
 import { installShortcuts } from './keyboard/shortcuts';
 import { TopBar } from './components/TopBar';
+import { UpdateBar } from './components/UpdateBar';
 import { VideoSurface } from './components/VideoSurface';
 import { Drawer } from './components/Drawer';
 import { PlayerControls } from './components/PlayerControls';
@@ -41,17 +43,27 @@ function build(): void {
   if (!root) throw new Error('the #app container is missing from index.html');
 
   const topBar = new TopBar();
+  const updateBar = new UpdateBar();
   const videoSurface = new VideoSurface();
   const drawer = new Drawer();
   const controls = new PlayerControls();
   const sidePanel = new SidePanel();
 
   const stage = el('div', { class: 'stage' }, videoSurface.root, sidePanel.handle, sidePanel.root);
-  const shell = el('div', { class: 'shell' }, topBar.root, stage, drawer.root, controls.root);
+  const shell = el(
+    'div',
+    { class: 'shell' },
+    topBar.root,
+    updateBar.root,
+    stage,
+    drawer.root,
+    controls.root,
+  );
 
   root.append(shell);
 
   topBar.mount();
+  updateBar.mount();
   videoSurface.mount();
   drawer.mount();
   controls.mount();
@@ -242,6 +254,11 @@ async function start(): Promise<void> {
   await loadSettings();
   await refreshRecent();
   await refreshPlaylist();
+
+  // The running version is shown in the Info tab and the settings drawer, so it
+  // is read at startup rather than waiting for an update check.
+  const buildInfo = await appVersion();
+  if (buildInfo) store.set({ update: buildInfo });
 
   // The engine reports readiness through an event, but a page reload during
   // development can miss it, so the state is also read directly.

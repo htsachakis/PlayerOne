@@ -189,11 +189,39 @@ PLAYERONE_LOG=debug dist\PlayerOne-1.0.0-windows-amd64\PlayerOne.exe
 | 12.7 | ⬜ Open a file from a path with spaces | Opens |
 | 12.8 | ⬜ Leave it playing 10+ minutes | No leak, no drift, position stays accurate |
 
-## 13. Distribution
+## 13. Version and updates
 
 | # | Test | Expected |
 |---|---|---|
-| 13.1 | ⬜ Copy the whole `dist\PlayerOne-1.0.0-windows-amd64` folder elsewhere and run | Works — mpv comes from its own `bin\` |
+| 13.1 | ⬜ Look at the window title | `PlayerOne v1.0.1` |
+| 13.2 | ⬜ **Info ▸ PlayerOne** | Version, commit and build date |
+| 13.3 | ⬜ Settings drawer | The version, and a **Check now** button |
+| 13.4 | ⬜ **Check now** while on the latest | "PlayerOne x.y.z is the latest version." |
+| 13.5 | ⬜ Install an older release, then launch | Update bar appears within ~10s |
+| 13.6 | ⬜ **What's new** | Opens the GitHub release page |
+| 13.7 | ⬜ **Update now** | Progress bar, then PlayerOne closes and the installer runs |
+| 13.8 | ⬜ Finish the installer | PlayerOne reopens on the new version |
+| 13.9 | ⬜ **Skip this version**, restart | Not offered again |
+| 13.10 | ⬜ Turn update checking off, restart | No check; `settings.json` shows `checkForUpdates: false` |
+| 13.11 | ⬜ Run the **portable** copy on an old version | Offers the release page, not an install |
+| 13.12 | ⬜ First line of the log | Names the version, commit and build date |
+
+## 14. Open with
+
+| # | Test | Expected |
+|---|---|---|
+| 14.1 | ⬜ Right-click an `.mkv` ▸ Open with | PlayerOne listed |
+| 14.2 | ⬜ Same for `.mp4`, `.avi`, `.mov`, `.mp3` | Listed for all of them |
+| 14.3 | ⬜ Check your existing default player | **Unchanged** — PlayerOne must not have taken it |
+| 14.4 | ⬜ Settings ▸ Default apps | PlayerOne appears and can be chosen |
+| 14.5 | ⬜ Open a file through Open with | It plays |
+| 14.6 | ⬜ Uninstall, then right-click a video | PlayerOne is gone from the menu |
+
+## 15. Distribution
+
+| # | Test | Expected |
+|---|---|---|
+| 15.1 | ⬜ Copy the whole `dist\PlayerOne-1.0.0-windows-amd64` folder elsewhere and run | Works — mpv comes from its own `bin\` |
 | 13.2 | ⬜ Run `build\bin\PlayerOne.exe` alone from another folder | Explains mpv is missing (expected: no `bin\` beside it) |
 | 13.3 | ⬜ `winget install NSIS.NSIS`, then `pwsh scripts/package.ps1 -Installer` | Installer builds |
 | 13.4 | ⬜ Run the installer | Installs, Start menu and desktop shortcuts appear |

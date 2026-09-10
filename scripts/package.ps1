@@ -37,7 +37,29 @@ try {
     }
 
     Write-Step 'Building'
-    $buildArgs = @('build', '-platform', 'windows/amd64', '-clean')
+
+    # Compiled in so the running application can report its version, and so the
+    # updater has something to compare against.
+    $commit = ''
+    try { $commit = (git rev-parse HEAD 2>$null) } catch { }
+    $ldflags = @(
+        "-X playerone/internal/version.Version=$Version"
+        "-X playerone/internal/version.Commit=$commit"
+        "-X playerone/internal/version.Date=$(Get-Date -Format 'yyyy-MM-dd')"
+    ) -join ' '
+
+    $buildArgs = @('build', '-platform', 'windows/amd64', '-clean', '-ldflags', $ldflags)
+
+    # wails.json carries the version the installer reports to Windows, in Add or
+    # Remove Programs and in the executable's file properties. It is stamped for
+    # the build and put back afterwards, so the number cannot drift from the one
+    # compiled in and the working tree is left clean either way.
+    $wailsJson = 'wails.json'
+    $originalWails = Get-Content $wailsJson -Raw
+    (ConvertFrom-Json $originalWails) | ForEach-Object {
+        $_.info.productVersion = $Version
+        $_ | ConvertTo-Json -Depth 10 | Set-Content $wailsJson -Encoding utf8
+    }
     if ($Installer) {
         if (-not (Get-Command makensis -ErrorAction SilentlyContinue)) {
             # The Windows installer for NSIS does not add itself to PATH.
@@ -51,8 +73,15 @@ try {
         $buildArgs += '-nsis'
     }
 
-    & wails @buildArgs
-    if ($LASTEXITCODE -ne 0) { throw 'The build failed.' }
+    try {
+        & wails @buildArgs
+        if ($LASTEXITCODE -ne 0) { throw 'The build failed.' }
+    }
+    finally {
+        # Restored even when the build fails, so a failure never leaves the
+        # repository with a modified wails.json.
+        Set-Content $wailsJson -Value $originalWails -NoNewline -Encoding utf8
+    }
 
     $stage = "dist/PlayerOne-$Version-windows-amd64"
     Write-Step "Assembling $stage"

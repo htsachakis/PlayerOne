@@ -2,6 +2,8 @@ import { store } from '../state/store';
 import type { AppState } from '../state/store';
 import {
   acceptResume,
+  checkForUpdates,
+  setCheckForUpdates,
   chooseAndAddSubtitle,
   clearRecent,
   declineResume,
@@ -14,7 +16,10 @@ import {
   setAutoResume,
   setSpeed,
   setSubtitleDelay,
+  setSubtitleScale,
   setSubtitleTrack,
+  SUBTITLE_SCALE_MAX,
+  SUBTITLE_SCALE_MIN,
 } from '../services/player';
 import { clear, el } from '../util/dom';
 import { formatSpeed, formatTime } from '../util/time';
@@ -68,13 +73,14 @@ export class Drawer {
   private signature(state: AppState): string {
     switch (state.drawer) {
       case 'subtitles':
-        return `sub|${state.playback.subtitleId}|${state.tracks.length}|${state.playback.subtitleDelay}`;
+        return `sub|${state.playback.subtitleId}|${state.tracks.length}|` +
+          `${state.playback.subtitleDelay}|${state.playback.subtitleScale}`;
       case 'audio':
         return `aud|${state.playback.audioId}|${state.tracks.length}|${state.playback.audioDelay}`;
       case 'speed':
         return `spd|${state.playback.speed}`;
       case 'settings':
-        return `set|${JSON.stringify(state.settings)}`;
+        return `set|${JSON.stringify(state.settings)}|${state.update?.version ?? ''}`;
       case 'recent':
         return `rec|${state.recent.map((r) => r.path + r.position).join('|')}`;
       case 'resume':
@@ -142,6 +148,9 @@ export class Drawer {
         actionButton('subtitleFile', 'Load subtitle file…', () => {
           void chooseAndAddSubtitle();
           close();
+        }),
+        scaleControl('Subtitle size', state.playback.subtitleScale, (value) => {
+          void setSubtitleScale(value);
         }),
         delayControl('Subtitle delay', state.playback.subtitleDelay, (value) => {
           void setSubtitleDelay(value);
@@ -251,6 +260,14 @@ export class Drawer {
         ),
       ),
       el(
+        'div',
+        { class: 'settings-list settings-section' },
+        checkbox('Check for updates automatically', settings.checkForUpdates, (checked) => {
+          setCheckForUpdates(checked);
+        }),
+        versionRow(state),
+      ),
+      el(
         'p',
         { class: 'menu-note' },
         `Settings are stored in ${state.diagnostics?.settingsPath || 'your user application data folder'}.`,
@@ -348,6 +365,38 @@ export class Drawer {
   }
 }
 
+/**
+ * Shows the running version and offers a check.
+ *
+ * The result is written straight into the row rather than only into the update
+ * bar, because "you are up to date" is an answer to a question the user just
+ * asked, and a bar that stays hidden looks like nothing happened.
+ */
+function versionRow(state: AppState): HTMLElement {
+  const status = el('span', { class: 'settings-version-status' },
+    state.update?.status.message ?? '');
+
+  const check = el('button', { class: 'menu-action', type: 'button' }, 'Check now');
+  check.addEventListener('click', () => {
+    check.disabled = true;
+    status.textContent = 'Checking…';
+
+    void checkForUpdates(true).then((info) => {
+      check.disabled = false;
+      status.textContent = info?.status.message ?? 'The check could not be completed.';
+    });
+  });
+
+  return el(
+    'div',
+    { class: 'settings-row settings-version' },
+    el('span', { class: 'settings-version-label' },
+      `Version ${state.update?.detail || state.update?.version || 'unknown'}`),
+    check,
+    status,
+  );
+}
+
 function close(): void {
   store.set({ drawer: 'none' });
 }
@@ -422,6 +471,53 @@ function delayControl(label: string, value: number, onChange: (value: number) =>
 
   return el('div', { class: 'delay-control' },
     el('span', { class: 'delay-label' }, label), minus, readout, plus, reset);
+}
+
+/**
+ * A -/+ stepper for the subtitle size, shown as a percentage.
+ *
+ * A percentage reads more naturally than mpv's multiplier: "120%" says what it
+ * does, where "1.2" invites the question "1.2 of what?".
+ */
+function scaleControl(label: string, value: number, onChange: (value: number) => void): HTMLElement {
+  // A missing value means the backend has not reported yet; mpv's own size is 1.
+  let current = value > 0 ? value : 1;
+
+  const readout = el('span', { class: 'delay-value' }, formatScale(current));
+
+  const step = (factor: number) => {
+    const next = clampScale(Math.round(current * factor * 100) / 100);
+    if (next === current) return;
+    current = next;
+    readout.textContent = formatScale(current);
+    onChange(current);
+  };
+
+  // Multiplied rather than added: a fixed step is coarse at 25% and far too
+  // fine at 400%, whereas a ratio feels even across the whole range.
+  const smaller = el('button', { class: 'delay-button', type: 'button', title: 'Smaller' }, '−');
+  smaller.addEventListener('click', () => step(1 / 1.1));
+
+  const larger = el('button', { class: 'delay-button', type: 'button', title: 'Larger' }, '+');
+  larger.addEventListener('click', () => step(1.1));
+
+  const reset = el('button', { class: 'delay-reset', type: 'button', title: 'Back to the default size' }, 'Reset');
+  reset.addEventListener('click', () => {
+    current = 1;
+    readout.textContent = formatScale(current);
+    onChange(current);
+  });
+
+  return el('div', { class: 'delay-control' },
+    el('span', { class: 'delay-label' }, label), smaller, readout, larger, reset);
+}
+
+function clampScale(value: number): number {
+  return Math.min(Math.max(value, SUBTITLE_SCALE_MIN), SUBTITLE_SCALE_MAX);
+}
+
+function formatScale(value: number): string {
+  return `${Math.round(value * 100)}%`;
 }
 
 function formatDelay(value: number): string {

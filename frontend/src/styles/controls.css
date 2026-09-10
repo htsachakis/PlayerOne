@@ -102,9 +102,15 @@
   height: 6px;
 }
 
+/*
+ * Below the seek bar, not above it. Above is the video, which is a native
+ * window the page cannot draw over, so a tooltip there is simply invisible.
+ * Below sits the control bar, which is ordinary HTML.
+ */
 .timeline-tooltip {
   position: absolute;
-  bottom: 22px;
+  top: calc(100% + 2px);
+  z-index: 20;
   transform: translateX(-50%);
   max-width: 320px;
   padding: 4px 8px;
@@ -555,4 +561,27 @@
 .recent-forget .icon {
   width: 14px;
   height: 14px;
+}
+
+/* --- Version and update controls in the settings drawer --- */
+
+.settings-section {
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--border);
+}
+
+.settings-version {
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.settings-version-label {
+  color: var(--text);
+}
+
+.settings-version-status {
+  flex-basis: 100%;
+  color: var(--text-faint);
+  font-size: 12px;
 }

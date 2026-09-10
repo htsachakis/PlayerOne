@@ -178,6 +178,24 @@ func clampSpeed(v float64) float64 {
 	return v
 }
 
+// Subtitle scale bounds. Below a quarter the text is unreadable; above four
+// times it fills the frame, and both are certainly a mis-click rather than a
+// preference.
+const (
+	minSubtitleScale = 0.25
+	maxSubtitleScale = 4.0
+)
+
+func clampSubtitleScale(v float64) float64 {
+	if !(v >= minSubtitleScale) { // also catches NaN
+		return 1.0
+	}
+	if v > maxSubtitleScale {
+		return maxSubtitleScale
+	}
+	return v
+}
+
 func clampVolume(v float64) float64 {
 	if !(v >= 0) {
 		return 100

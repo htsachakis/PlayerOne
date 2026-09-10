@@ -65,15 +65,27 @@
   font-weight: 600;
 }
 
+/*
+ * min-width: 0 on both, not just min-height.
+ *
+ * A flex item defaults to min-width: auto, which refuses to shrink below its
+ * content's minimum. One long unbreakable filename in the playlist was enough
+ * to force this column wider than the panel; the panel clips its overflow, so
+ * the remove button was pushed out of sight and became unclickable at any
+ * narrow width. Allowing the column to shrink is what lets the title truncate
+ * to an ellipsis instead, leaving the button where it belongs.
+ */
 .panel-body {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   display: flex;
 }
 
 .panel-tab-content {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
@@ -171,6 +183,7 @@
 .transcript-list {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: var(--space-2) var(--space-2) var(--space-5);
@@ -329,26 +342,33 @@
 
 /* --- Playlist --- */
 
+/*
+ * The actions sit on the left and never shrink; the count is pushed right and
+ * is the only thing allowed to give way. The panel can be dragged down to
+ * 260px, and a plain nowrap row simply pushed the buttons out of sight there.
+ */
 .playlist-toolbar {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 2px;
   padding: var(--space-2) var(--space-3);
   border-bottom: 1px solid var(--border);
 }
 
-.playlist-spacer {
-  flex: 1;
-}
-
 .playlist-count {
-  margin-right: var(--space-2);
+  margin-left: auto;
+  padding-left: var(--space-2);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   color: var(--text-faint);
   font-size: 12px;
   white-space: nowrap;
 }
 
 .playlist-tool {
+  flex: none;
   display: inline-flex;
   padding: 6px;
   border-radius: var(--radius-sm);
@@ -373,6 +393,7 @@
 .playlist-list {
   flex: 1;
   min-height: 0;
+  min-width: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: var(--space-2) var(--space-2) var(--space-5);
@@ -417,7 +438,10 @@
 
 .playlist-open {
   flex: 1;
+  /* Both are needed: min-width lets the flex item shrink below its content,
+     and overflow stops the title spilling across the remove button. */
   min-width: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -427,7 +451,8 @@
 }
 
 .playlist-name {
-  max-width: 100%;
+  display: block;
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -441,6 +466,10 @@
 }
 
 .playlist-meta {
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   color: var(--text-faint);
   font-size: 12px;
 }
@@ -459,10 +488,12 @@
   margin-right: 4px;
   border-radius: var(--radius-sm);
   color: var(--text-faint);
-  opacity: 0;
+  opacity: 0.55;
+  transition: opacity var(--transition), background var(--transition);
 }
 
-.playlist-row:hover .playlist-remove {
+.playlist-row:hover .playlist-remove,
+.playlist-remove:focus-visible {
   opacity: 1;
 }
 

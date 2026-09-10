@@ -70,6 +70,9 @@ func (a *App) SaveSettings(next settings.Settings) (settings.Settings, error) {
 		if applied.AudioDelay != previous.AudioDelay {
 			_ = engine.SetAudioDelay(a.ctx, applied.AudioDelay)
 		}
+		if applied.SubtitleScale != previous.SubtitleScale {
+			_ = engine.SetSubtitleScale(a.ctx, applied.SubtitleScale)
+		}
 	}
 
 	return applied, nil

@@ -46,6 +46,8 @@ type Player interface {
 
 	SetSubtitleDelay(ctx context.Context, seconds float64) error
 	SetAudioDelay(ctx context.Context, seconds float64) error
+	// SetSubtitleScale resizes subtitles; 1 is mpv's own size.
+	SetSubtitleScale(ctx context.Context, scale float64) error
 
 	// State returns the current snapshot. Cheap enough to call freely.
 	State() PlaybackState

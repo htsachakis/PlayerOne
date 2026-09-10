@@ -14,6 +14,10 @@ export function Chapters() {
   return window['go']['main']['App']['Chapters']();
 }
 
+export function CheckForUpdates(arg1) {
+  return window['go']['main']['App']['CheckForUpdates'](arg1);
+}
+
 export function ChooseFile() {
   return window['go']['main']['App']['ChooseFile']();
 }
@@ -54,6 +58,10 @@ export function HandleDrop(arg1) {
   return window['go']['main']['App']['HandleDrop'](arg1);
 }
 
+export function InstallUpdate() {
+  return window['go']['main']['App']['InstallUpdate']();
+}
+
 export function IsFullscreen() {
   return window['go']['main']['App']['IsFullscreen']();
 }
@@ -76,6 +84,10 @@ export function NextTrack() {
 
 export function Open(arg1) {
   return window['go']['main']['App']['Open'](arg1);
+}
+
+export function OpenReleasePage() {
+  return window['go']['main']['App']['OpenReleasePage']();
 }
 
 export function Pause() {
@@ -146,6 +158,10 @@ export function SetAutoResume(arg1) {
   return window['go']['main']['App']['SetAutoResume'](arg1);
 }
 
+export function SetCheckForUpdates(arg1) {
+  return window['go']['main']['App']['SetCheckForUpdates'](arg1);
+}
+
 export function SetFollowTranscript(arg1) {
   return window['go']['main']['App']['SetFollowTranscript'](arg1);
 }
@@ -182,6 +198,10 @@ export function SetSubtitleDelay(arg1) {
   return window['go']['main']['App']['SetSubtitleDelay'](arg1);
 }
 
+export function SetSubtitleScale(arg1) {
+  return window['go']['main']['App']['SetSubtitleScale'](arg1);
+}
+
 export function SetSubtitleTrack(arg1) {
   return window['go']['main']['App']['SetSubtitleTrack'](arg1);
 }
@@ -200,6 +220,10 @@ export function SetVolume(arg1) {
 
 export function Settings() {
   return window['go']['main']['App']['Settings']();
+}
+
+export function SkipUpdate(arg1) {
+  return window['go']['main']['App']['SkipUpdate'](arg1);
 }
 
 export function SpeedPresets() {
@@ -232,4 +256,8 @@ export function Tracks() {
 
 export function Transcript() {
   return window['go']['main']['App']['Transcript']();
+}
+
+export function Version() {
+  return window['go']['main']['App']['Version']();
 }

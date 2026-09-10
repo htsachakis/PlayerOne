@@ -130,6 +130,9 @@ func (p *MPVPlayer) applyProperty(name string, data json.RawMessage) {
 	case "audio-delay":
 		p.setFloat(&p.state.AudioDelay, data)
 
+	case "sub-scale":
+		p.setFloat(&p.state.SubtitleScale, data)
+
 	case "hwdec-current":
 		if v, ok := decodeString(data); ok {
 			p.mu.Lock()
@@ -159,6 +162,7 @@ var syncedProperties = []string{
 	"aid",
 	"sub-delay",
 	"audio-delay",
+	"sub-scale",
 	"hwdec-current",
 	"media-title",
 	"time-pos",

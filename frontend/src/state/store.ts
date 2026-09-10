@@ -8,6 +8,7 @@ import type {
   Settings,
   Track,
   TranscriptResult,
+  UpdateInfo,
 } from '../types/media';
 
 export type PanelTab = 'chapters' | 'transcript' | 'info' | 'playlist';
@@ -52,6 +53,13 @@ export interface AppState {
   transcriptQuery: string;
 
   resumePrompt: { position: number; filename: string } | null;
+
+  /** Set once a check finds a newer release; drives the update bar. */
+  update: UpdateInfo | null;
+  updateDismissed: boolean;
+  /** Bytes downloaded so far while an update is being fetched. */
+  updateProgress: { done: number; total: number } | null;
+  updateInstalling: boolean;
 }
 
 export const defaultPlayback: PlaybackState = {
@@ -73,6 +81,7 @@ export const defaultPlayback: PlaybackState = {
   audioId: 0,
   subtitleDelay: 0,
   audioDelay: 0,
+  subtitleScale: 1,
   hwdec: '',
 };
 
@@ -88,6 +97,10 @@ export const defaultSettings: Settings = {
   lastAudioLang: '',
   subtitleDelay: 0,
   audioDelay: 0,
+  subtitleScale: 1,
+  checkForUpdates: true,
+  lastUpdateCheck: 0,
+  skippedVersion: '',
   window: { width: 1440, height: 900, x: 0, y: 0, maximised: false, valid: false },
   logLevel: 'INFO',
 };
@@ -135,6 +148,11 @@ class Store {
     transcriptQuery: '',
 
     resumePrompt: null,
+
+    update: null,
+    updateDismissed: false,
+    updateProgress: null,
+    updateInstalling: false,
   };
 
   private listeners = new Set<Listener>();

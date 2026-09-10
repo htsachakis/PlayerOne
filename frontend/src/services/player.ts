@@ -13,6 +13,7 @@ import type {
   RepeatMode,
   TracksPayload,
   TranscriptResult,
+  UpdateInfo,
 } from '../types/media';
 
 /**
@@ -103,6 +104,11 @@ export const disableSubtitles = () => guard(() => App.DisableSubtitles());
 export const setAudioTrack = (id: number) => guard(() => App.SetAudioTrack(id));
 export const setSubtitleDelay = (seconds: number) => guard(() => App.SetSubtitleDelay(seconds));
 export const setAudioDelay = (seconds: number) => guard(() => App.SetAudioDelay(seconds));
+export const setSubtitleScale = (scale: number) => guard(() => App.SetSubtitleScale(scale));
+
+/** The range the subtitle size control offers, matching the backend's clamp. */
+export const SUBTITLE_SCALE_MIN = 0.25;
+export const SUBTITLE_SCALE_MAX = 4;
 
 export async function speedPresets(): Promise<number[]> {
   const presets = await guard(() => App.SpeedPresets());
@@ -252,6 +258,58 @@ export function cycleRepeat(current: RepeatMode): RepeatMode {
   return 'off';
 }
 
+// --- Updates ---
+
+/**
+ * Asks the backend to check GitHub.
+ *
+ * force is set when the user asks explicitly, which bypasses both the
+ * once-a-day limit and any version they previously chose to skip.
+ */
+export async function checkForUpdates(force: boolean): Promise<UpdateInfo | undefined> {
+  const info = (await guard(() => App.CheckForUpdates(force))) as UpdateInfo | undefined;
+  if (info) {
+    store.set({
+      update: info,
+      // An explicit check should surface its answer even if the bar was
+      // dismissed earlier in the session.
+      updateDismissed: force ? false : store.get().updateDismissed,
+    });
+  }
+  return info;
+}
+
+export async function installUpdate(): Promise<void> {
+  store.set({ updateInstalling: true, updateProgress: { done: 0, total: 0 } });
+
+  try {
+    await App.InstallUpdate();
+    // No success path to render: the application is about to quit so the
+    // installer can replace it.
+  } catch (err) {
+    store.set({ updateInstalling: false, updateProgress: null });
+    reportError(err);
+  }
+}
+
+export const openReleasePage = () => guard(() => App.OpenReleasePage());
+
+export function dismissUpdate(): void {
+  store.set({ updateDismissed: true });
+}
+
+export function skipUpdate(version: string): void {
+  store.set({ updateDismissed: true });
+  void guard(() => App.SkipUpdate(version));
+}
+
+export function setCheckForUpdates(on: boolean): void {
+  store.update((state) => ({ settings: { ...state.settings, checkForUpdates: on } }));
+  void guard(() => App.SetCheckForUpdates(on));
+}
+
+export const appVersion = () => guard(() => App.Version()) as Promise<UpdateInfo | undefined>;
+
 // --- Settings ---
 
 export async function loadSettings(): Promise<Settings> {
@@ -369,6 +427,14 @@ export function listen(): void {
       resumePrompt: { position: prompt.position, filename: prompt.filename },
       drawer: 'resume',
     });
+  });
+
+  EventsOn('update:available', (info: UpdateInfo) => {
+    store.set({ update: info, updateDismissed: false });
+  });
+
+  EventsOn('update:progress', (progress: { done: number; total: number }) => {
+    store.set({ updateProgress: progress });
   });
 
   EventsOn('app:error', (message: string) => {

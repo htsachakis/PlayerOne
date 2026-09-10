@@ -58,6 +58,8 @@ export interface PlaybackState {
   audioId: number;
   subtitleDelay: number;
   audioDelay: number;
+  /** Multiplies the subtitle font size; 1 is mpv's own size. */
+  subtitleScale: number;
   hwdec: string;
 }
 
@@ -155,6 +157,10 @@ export interface Settings {
   lastAudioLang: string;
   subtitleDelay: number;
   audioDelay: number;
+  subtitleScale: number;
+  checkForUpdates: boolean;
+  lastUpdateCheck: number;
+  skippedVersion: string;
   window: WindowState;
   logLevel: string;
 }
@@ -214,4 +220,36 @@ export interface PlaylistState {
   current: number;
   shuffle: boolean;
   repeat: RepeatMode;
+}
+
+// --- Updates ---
+
+export interface UpdateRelease {
+  version: string;
+  name: string;
+  notes: string;
+  url: string;
+  publishedAt: string;
+  installerUrl: string;
+  installerName: string;
+  installerSize: number;
+  /** False when the release published no SHA256SUMS.txt to verify against. */
+  hasChecksums: boolean;
+}
+
+export interface UpdateStatus {
+  checked: boolean;
+  available: boolean;
+  current: string;
+  latest: UpdateRelease | null;
+  /** Always populated, including when no update was offered and why. */
+  message: string;
+}
+
+export interface UpdateInfo {
+  version: string;
+  detail: string;
+  /** False for the portable copy, which has no installer to update in place. */
+  installed: boolean;
+  status: UpdateStatus;
 }

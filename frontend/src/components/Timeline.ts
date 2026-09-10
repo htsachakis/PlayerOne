@@ -112,13 +112,30 @@ export class Timeline {
     this.showTooltip(event, this.positionFromEvent(event));
   };
 
+  /**
+   * Positions the tooltip over the cursor, without letting it leave the window.
+   *
+   * The tooltip is centred on the pointer, so near either end of the bar half
+   * of it would hang past the window edge and be clipped - exactly where the
+   * first and last chapters are. Clamping happens in viewport coordinates
+   * because that is where the edges are; the result is converted back to the
+   * track's own coordinates at the end.
+   */
   private showTooltip(event: PointerEvent | MouseEvent, position: number): void {
-    const rect = this.track.getBoundingClientRect();
-    const x = clamp(event.clientX - rect.left, 0, rect.width);
-
-    this.tooltip.hidden = false;
-    this.tooltip.style.left = `${x}px`;
+    // The text is set first: the clamp needs the tooltip's real width, and
+    // that is only known once it has content and is laid out.
     setText(this.tooltip, this.tooltipLabel(position));
+    this.tooltip.hidden = false;
+
+    const rect = this.track.getBoundingClientRect();
+    const half = this.tooltip.offsetWidth / 2;
+    const centre = clamp(
+      event.clientX,
+      TOOLTIP_EDGE_MARGIN + half,
+      window.innerWidth - TOOLTIP_EDGE_MARGIN - half,
+    );
+
+    this.tooltip.style.left = `${centre - rect.left}px`;
   }
 
   private tooltipLabel(position: number): string {
@@ -175,6 +192,9 @@ export class Timeline {
     }
   }
 }
+
+/** How close the tooltip may come to the window edge. */
+const TOOLTIP_EDGE_MARGIN = 8;
 
 function chapterAt(chapters: Array<{ start: number; title: string }>, position: number) {
   let found: { start: number; title: string } | null = null;

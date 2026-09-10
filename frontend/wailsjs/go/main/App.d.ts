@@ -12,6 +12,8 @@ export function AddToPlaylist(arg1:Array<string>):Promise<playlist.State>;
 
 export function Chapters():Promise<Array<player.Chapter>>;
 
+export function CheckForUpdates(arg1:boolean):Promise<main.UpdateInfo>;
+
 export function ChooseFile():Promise<string>;
 
 export function ChooseFiles():Promise<Array<string>>;
@@ -32,6 +34,8 @@ export function ForgetRecent(arg1:string):Promise<void>;
 
 export function HandleDrop(arg1:Array<string>):Promise<void>;
 
+export function InstallUpdate():Promise<void>;
+
 export function IsFullscreen():Promise<boolean>;
 
 export function LogClientError(arg1:string):Promise<void>;
@@ -43,6 +47,8 @@ export function MediaInfo():Promise<player.MediaInfo>;
 export function NextTrack():Promise<void>;
 
 export function Open(arg1:string):Promise<main.OpenResult>;
+
+export function OpenReleasePage():Promise<void>;
 
 export function Pause():Promise<void>;
 
@@ -78,6 +84,8 @@ export function SetAudioTrack(arg1:number):Promise<void>;
 
 export function SetAutoResume(arg1:boolean):Promise<void>;
 
+export function SetCheckForUpdates(arg1:boolean):Promise<void>;
+
 export function SetFollowTranscript(arg1:boolean):Promise<void>;
 
 export function SetFullscreen(arg1:boolean):Promise<void>;
@@ -96,6 +104,8 @@ export function SetSpeed(arg1:number):Promise<void>;
 
 export function SetSubtitleDelay(arg1:number):Promise<void>;
 
+export function SetSubtitleScale(arg1:number):Promise<void>;
+
 export function SetSubtitleTrack(arg1:number):Promise<void>;
 
 export function SetVideoBounds(arg1:number,arg2:number,arg3:number,arg4:number,arg5:number):Promise<void>;
@@ -105,6 +115,8 @@ export function SetVideoVisible(arg1:boolean):Promise<void>;
 export function SetVolume(arg1:number):Promise<void>;
 
 export function Settings():Promise<settings.Settings>;
+
+export function SkipUpdate(arg1:string):Promise<void>;
 
 export function SpeedPresets():Promise<Array<number>>;
 
@@ -121,3 +133,5 @@ export function ToolStatus():Promise<Array<string>>;
 export function Tracks():Promise<Array<player.Track>>;
 
 export function Transcript():Promise<main.TranscriptResult>;
+
+export function Version():Promise<main.UpdateInfo>;

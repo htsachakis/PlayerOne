@@ -277,6 +277,21 @@ func (a *App) SetAudioDelay(seconds float64) error {
 	return nil
 }
 
+// SetSubtitleScale resizes subtitles. 1 is the size mpv would choose; the
+// interface offers 0.25 to 4.
+func (a *App) SetSubtitleScale(scale float64) error {
+	engine, err := a.requireEngine()
+	if err != nil {
+		return err
+	}
+	if err := engine.SetSubtitleScale(a.ctx, scale); err != nil {
+		return err
+	}
+
+	a.persist(func(s *settingsMutation) { s.SubtitleScale = scale })
+	return nil
+}
+
 // State returns the current playback snapshot.
 //
 // The frontend receives state through events; this exists so a freshly loaded

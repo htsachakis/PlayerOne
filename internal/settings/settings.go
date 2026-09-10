@@ -38,6 +38,21 @@ type Settings struct {
 	SubtitleDelay float64 `json:"subtitleDelay"`
 	AudioDelay    float64 `json:"audioDelay"`
 
+	// SubtitleScale multiplies the subtitle font size; 1 is mpv's own size.
+	// Remembered because a viewer's preferred size follows from their screen and
+	// eyesight, not from the file.
+	SubtitleScale float64 `json:"subtitleScale"`
+
+	// CheckForUpdates governs whether PlayerOne contacts GitHub on startup. It
+	// is the only network access the application makes, so it is a setting
+	// rather than a hidden behaviour.
+	CheckForUpdates bool `json:"checkForUpdates"`
+	// LastUpdateCheck is a Unix timestamp, kept so the check happens at most
+	// once a day rather than on every launch.
+	LastUpdateCheck int64 `json:"lastUpdateCheck"`
+	// SkippedVersion is a release the user chose not to be reminded about.
+	SkippedVersion string `json:"skippedVersion"`
+
 	Window WindowState `json:"window"`
 
 	// LogLevel is DEBUG, INFO, WARN or ERROR.
@@ -68,6 +83,8 @@ func Defaults() Settings {
 		SidePanelWidth:   380,
 		SubtitleDelay:    0,
 		AudioDelay:       0,
+		SubtitleScale:    1.0,
+		CheckForUpdates:  true,
 		LogLevel:         "INFO",
 		Window:           WindowState{Width: 1440, Height: 900},
 	}
@@ -97,6 +114,9 @@ func (s *Settings) Normalise() {
 	if !(s.AudioDelay >= -60) || s.AudioDelay > 60 {
 		s.AudioDelay = 0
 	}
+	if !(s.SubtitleScale >= MinSubtitleScale) || s.SubtitleScale > MaxSubtitleScale {
+		s.SubtitleScale = def.SubtitleScale
+	}
 	if s.LogLevel == "" {
 		s.LogLevel = def.LogLevel
 	}
@@ -114,6 +134,9 @@ const (
 	MaxSpeed      = 16.0
 	MinPanelWidth = 260
 	MaxPanelWidth = 900
+
+	MinSubtitleScale = 0.25
+	MaxSubtitleScale = 4.0
 )
 
 // Store loads and saves settings, serialising concurrent access.
