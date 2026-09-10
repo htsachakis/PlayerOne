@@ -16,6 +16,7 @@ import (
 	"playerone/internal/history"
 	"playerone/internal/logging"
 	"playerone/internal/media"
+	"playerone/internal/notes"
 	"playerone/internal/player"
 	"playerone/internal/playlist"
 	"playerone/internal/settings"
@@ -27,13 +28,14 @@ import (
 
 // Frontend event names. Everything the backend pushes goes through one of these.
 const (
-	eventState      = "playback:state"
-	eventTracks     = "player:tracks"
-	eventMediaOpen  = "media:opened"
-	eventMediaEnded = "media:ended"
-	eventError      = "app:error"
-	eventReady      = "app:ready"
-	eventResume     = "media:resume"
+	eventState        = "playback:state"
+	eventTracks       = "player:tracks"
+	eventMediaOpen    = "media:opened"
+	eventMediaEnded   = "media:ended"
+	eventError        = "app:error"
+	eventReady        = "app:ready"
+	eventResume       = "media:resume"
+	eventNotesChanged = "notes:changed"
 	// eventPointerMoved wakes the auto-hidden fullscreen controls. The page
 	// cannot see the pointer while it is over the video, so this is the only
 	// signal it gets.
@@ -55,6 +57,7 @@ type App struct {
 	settings *settings.Store
 	history  *history.Store
 	playlist *playlist.List
+	notes    *notes.Store
 	resolver *tools.Resolver
 	updates  *updater.Client
 
@@ -118,6 +121,7 @@ type App struct {
 func NewApp() *App {
 	return &App{
 		stopCh:          make(chan struct{}),
+		notes:           notes.NewStore(),
 		transcriptCache: make(map[int]*TranscriptResult),
 	}
 }
@@ -263,9 +267,10 @@ func (a *App) initialiseEngine() {
 	// The interface has almost certainly already reported where the video goes.
 	a.applyPendingVideoLayout()
 
-	a.wg.Add(2)
+	a.wg.Add(3)
 	go a.runResumeSaver()
 	go a.runStartupUpdateCheck()
+	go a.runNotesWatcher()
 
 	a.log.Info("app: engine ready")
 	a.emit(eventReady, a.Diagnostics())
@@ -647,6 +652,43 @@ func (a *App) runResumeSaver() {
 	}
 }
 
+// notesPollInterval is how often the bound notes file is checked for changes
+// made outside PlayerOne.
+//
+// The file is plain text, so it will be edited in Notepad and rewritten by
+// OneDrive and Dropbox. Polling rather than watching the filesystem is the
+// reliable choice across network shares and sync folders, where change
+// notifications are unreliable or absent, and two seconds is far below the
+// threshold at which a person notices a delay.
+const notesPollInterval = 2 * time.Second
+
+// runNotesWatcher re-reads the notes file when it changes on disk.
+func (a *App) runNotesWatcher() {
+	defer a.wg.Done()
+
+	ticker := time.NewTicker(notesPollInterval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-a.stopCh:
+			return
+		case <-ticker.C:
+			if a.notes == nil {
+				continue
+			}
+			changed, err := a.notes.Reload()
+			if err != nil {
+				a.log.Warn("app: %v", err)
+				continue
+			}
+			if changed {
+				a.emitNotes()
+			}
+		}
+	}
+}
+
 // saveResumePosition records where playback has reached.
 //
 // history.Record decides whether the position is worth keeping, so this can be
@@ -693,4 +735,11 @@ var mediaExtensions = map[string]bool{
 
 func looksLikeMediaFile(path string) bool {
 	return mediaExtensions[strings.ToLower(filepath.Ext(path))]
+}
+
+// CurrentPath is the file that is open, empty when nothing is.
+func (a *App) CurrentPath() string {
+	a.mu.RLock()
+	defer a.mu.RUnlock()
+	return a.currentPath
 }

@@ -31,9 +31,9 @@ type OpenResult struct {
 // Diagnostics describes the environment, for the Info tab and the startup
 // screen.
 type Diagnostics struct {
-	AppName    string `json:"appName"`
-	Tagline    string `json:"tagline"`
-	EngineReady bool  `json:"engineReady"`
+	AppName     string `json:"appName"`
+	Tagline     string `json:"tagline"`
+	EngineReady bool   `json:"engineReady"`
 	// StartupError is a user-facing explanation of why the engine is unavailable.
 	StartupError string `json:"startupError"`
 
@@ -169,6 +169,8 @@ func (a *App) Open(path string) (OpenResult, error) {
 	a.currentPath = abs
 	a.mediaInfo = nil
 	a.mu.Unlock()
+
+	a.bindNotes(abs)
 
 	a.invalidateTranscript()
 
