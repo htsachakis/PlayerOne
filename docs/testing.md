@@ -87,6 +87,60 @@ PLAYERONE_LOG=debug dist\PlayerOne-1.0.0-windows-amd64\PlayerOne.exe
 | 5.8 | ⬜ Turn subtitles **Off** | Panel explains subtitles are off |
 | 5.9 | ⬜ Open a video with no subtitles | Panel explains why, does not sit blank |
 
+## 5a. Notes
+
+Notes are written to a plain-text `<video>.notes` file beside the video. Keep
+that file open in an editor for these; several tests are about what lands in it.
+
+| # | Test | Expected |
+|---|---|---|
+| 5a.1 | ⬜ Press `T` while playing | Video **pauses**, composer opens **below the video**, never behind it |
+| 5a.2 | ⬜ Look at the stamped time | Roughly 5s behind where you were, rounded to the second |
+| 5a.3 | ⬜ Type a note, press `Enter` | Saves, composer closes, playback resumes |
+| 5a.4 | ⬜ Look beside the video | `<video-filename>.notes` exists, holding `00:MM:SS your text` |
+| 5a.5 | ⬜ Press `T`, press `Enter` with an empty box | A **bookmark**: italic "Bookmark" row, bare timestamp in the file |
+| 5a.6 | ⬜ Press `Esc` in the composer | Closes, nothing saved, playback resumes |
+| 5a.7 | ⬜ Press `T` while **paused** | Playback stays paused after saving |
+| 5a.8 | ⬜ Press `Shift`+`Enter` in the composer | New line, does not save |
+| 5a.9 | ⬜ Click a note | Jumps to that moment |
+| 5a.10 | ⬜ Watch while playing | The current note highlights as playback passes it |
+| 5a.11 | ⬜ Hover a note row | Star and delete appear; they stay hidden otherwise |
+| 5a.12 | ⬜ Star a note | Count reads `N notes · 1 starred`; `*` appears in the file |
+| 5a.13 | ⬜ Delete a note | Row and its file line both go |
+| 5a.14 | ⬜ Search note text | Filters, term highlighted, count reads `n of m notes` |
+| 5a.15 | ⬜ Search while bookmarks exist | Bookmarks vanish (they have no text); the count says so |
+| 5a.16 | ⬜ **Starred** filter | Only starred notes; combines with the search box |
+| 5a.17 | ⬜ Look at the seek bar | A tick per note, starred ones taller and accented |
+| 5a.18 | ⬜ Press `T` again within ~half a second of an existing note | **Edits** that note, prefilled, rather than adding a second |
+| 5a.19 | ⬜ Edit the `.notes` file in Notepad while playing | Panel updates within ~2s, no restart |
+| 5a.20 | ⬜ Hand-write `12:34 note` (`MM:SS`, no indent) and save | Parses; continuation lines attach to the note above |
+| 5a.21 | ⬜ Press `N` while the composer is open | Types the letter; **does not** skip to the next track |
+| 5a.22 | ⬜ Close the file (**Close**) | Notes tab empties; no note can be filed with nothing open |
+| 5a.23 | ⬜ Reopen the video | Notes come back from the sidecar |
+| 5a.24 | ⬜ Rename `<video>.mkv.notes` to `<video>.notes` and reopen | Still found |
+
+### 5a.b Read-only folders — *untested, needs a first pass*
+
+Copy a video into a folder you cannot write to (`icacls <folder> /deny
+"%USERNAME%:(W)"`), then:
+
+| # | Test | Expected |
+|---|---|---|
+| 5a.25 | ⬜ Take a note there | Explains the folder is read-only, opens a **Save** dialog defaulting to `<video>.notes` |
+| 5a.26 | ⬜ Save somewhere writable | The note you typed is there, not lost |
+| 5a.27 | ⬜ Reopen that video later | Notes load from the chosen location, no re-attaching |
+| 5a.28 | ⬜ Take a note, **Cancel** the dialog | Note kept in memory; a "Save notes as…" bar stays in the panel |
+| 5a.29 | ⬜ Take a second note after cancelling | **No second dialog**; the bar is still the only prompt |
+| 5a.30 | ⬜ **Load notes…** and pick a file by hand | Binds it; later notes save there |
+
+### 5a.c Settings
+
+| # | Test | Expected |
+|---|---|---|
+| 5a.31 | ⬜ Set the capture offset to 0 | `T` stamps the exact position |
+| 5a.32 | ⬜ Turn **Pause while writing a note** off | `T` opens the composer, video keeps playing |
+| 5a.33 | ⬜ Turn **Show notes on the seek bar** off | Ticks disappear, notes remain |
+
 ## 6. Tracks and subtitles
 
 | # | Test | Expected |
@@ -201,7 +255,7 @@ PLAYERONE_LOG=debug dist\PlayerOne-1.0.0-windows-amd64\PlayerOne.exe
 
 | # | Test | Expected |
 |---|---|---|
-| 13.1 | ⬜ Look at the window title | `PlayerOne v1.0.3` |
+| 13.1 | ⬜ Look at the window title | `PlayerOne v1.1.0` |
 | 13.2 | ⬜ **Info ▸ PlayerOne** | Version, commit and build date |
 | 13.3 | ⬜ Settings drawer | The version, and a **Check now** button |
 | 13.4 | ⬜ **Check now** while on the latest | "PlayerOne x.y.z is the latest version." |
