@@ -110,6 +110,55 @@ The lesson in these captures is generated sample media, not a real course.
 
 No C compiler is required. PlayerOne does not use cgo.
 
+## Installing
+
+The installer asks who the installation is for before it asks where to put it.
+
+| | For anyone who uses this computer | For me only |
+|---|---|---|
+| Goes to | `C:\Program Files\PlayerOne\PlayerOne` | `%LOCALAPPDATA%\Programs\PlayerOne\PlayerOne` |
+| Shortcuts, **Open with**, **Default apps** | Every account | Your account |
+| Registry | `HKLM` | `HKCU` |
+| Administrator rights | Required | Not needed |
+| Listed in **Apps ▸ Installed apps** | For everyone | For you |
+
+Either folder can still be changed on the next page. The *for me only* option is
+what to pick on a work machine where you cannot elevate, or when the other
+accounts on the computer have no use for a video player; the *anyone* option is
+the default when the installer is already running as an administrator.
+
+If PlayerOne is already installed, the installer starts on the option that copy
+used and updates it in place. Choosing the other one installs a **second** copy
+rather than moving the first, and says so before it does.
+
+### If PlayerOne is open
+
+Windows will not let a running application's files be replaced, so the
+installer checks before it writes anything. It waits five seconds first —
+during an in-app update PlayerOne is quitting anyway, and usually that is the
+end of it. If PlayerOne is still open after that, it asks:
+
+| Button | What it does |
+|---|---|
+| **Retry** | Close PlayerOne yourself, then click this |
+| **Ignore** | Closes PlayerOne for you, the way the window's X does, so your place in what was playing is saved first |
+| **Abort** | Stops. Nothing is written and the installed copy is left exactly as it was |
+
+The uninstaller asks the same question for the same reason. A silent (`/S`)
+install has nobody to ask: it requests a clean shutdown, waits ten seconds, and
+then stops with exit code **67** rather than forcing anything unattended.
+
+For a scripted or silent install, `/ALLUSERS` and `/CURRENTUSER` settle the
+question on the command line — the only way to say it alongside `/S`:
+
+```bash
+PlayerOne-1.0.0-windows-amd64-installer.exe /S /CURRENTUSER
+```
+
+Uninstalling removes only the copy whose uninstaller is run, along with the
+registry entries that copy wrote. Settings are kept either way; see
+[Settings location](#settings-location).
+
 ## Development setup
 
 ```bash
@@ -439,13 +488,18 @@ after the window appears. When one exists, a bar appears under the title bar
 offering *What's new*, *Update now*, *Skip this version* and *Later*.
 
 *Update now* downloads the installer, **verifies it against the `SHA256SUMS.txt`
-published with the release**, then asks Windows to run it. PlayerOne installs
-into `Program Files`, so Windows raises its usual **User Account Control
-prompt** first; declining it leaves PlayerOne running on the version it has.
-Once accepted, PlayerOne closes so its files can be replaced and the installer
-reopens it when it finishes. A download whose checksum does not
-match is deleted and refused — the updater runs an executable, so it has to be
-able to prove what it is running.
+published with the release**, then asks Windows to run it. On an administrator
+account Windows raises its usual **User Account Control prompt** first, because
+the installer asks for the highest rights that account has; declining it leaves
+PlayerOne running on the version it has. A *for me only* installation on a
+standard account needs no prompt at all — nothing outside the profile is
+written. Once it starts, PlayerOne closes so its files can be replaced, and the
+installer reopens it when it finishes. A download whose checksum does not match
+is deleted and refused — the updater runs an executable, so it has to be able
+to prove what it is running.
+
+The installer starts on the scope the installed copy already uses, so an update
+lands on top of it and does not change where PlayerOne lives.
 
 Worth knowing:
 
@@ -453,8 +507,8 @@ Worth knowing:
   `api.github.com` and nothing else. Turn it off with **Settings ▸ Check for
   updates automatically**, or check by hand with **Check now**.
 - The **portable** copy will not install over itself — it has no installer, and
-  running one would leave a second copy in `Program Files` and this folder
-  stale. It points you at the release page instead.
+  running one would leave a second copy in `Program Files` or your AppData and
+  this folder stale. It points you at the release page instead.
 - A build made with plain `go build` reports itself as a development build and
   is never offered an update, so a working tree cannot be replaced by a release.
 

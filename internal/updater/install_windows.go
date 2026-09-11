@@ -42,13 +42,21 @@ func IsInstalled() bool {
 // The caller is expected to shut PlayerOne down immediately afterwards: the
 // installer cannot replace files that are still in use.
 //
-// ShellExecute rather than CreateProcess, because the installer writes to
-// Program Files and its manifest says so. CreateProcess - which is what
-// os/exec uses - refuses such a program outright with "the requested operation
-// requires elevation"; it has no way to ask. Only the shell can raise the User
-// Account Control prompt, which is what happens when the installer is started
-// from Explorer. The process it starts is independent of this one, so there is
-// nothing to detach.
+// ShellExecute rather than CreateProcess, because the installer asks for the
+// highest rights the account has and its manifest says so. CreateProcess -
+// which is what os/exec uses - refuses such a program outright with "the
+// requested operation requires elevation"; it has no way to ask. Only the
+// shell can raise the User Account Control prompt, which is what happens when
+// the installer is started from Explorer. The process it starts is independent
+// of this one, so there is nothing to detach.
+//
+// The verb is deliberately the default one and not "runas". The installer can
+// be a for-me-only copy living in the user's own AppData, and "runas" on a
+// standard account asks for an administrator's password and then runs as that
+// administrator - updating their profile rather than the one that asked. The
+// manifest already requests the highest token available, so an administrator
+// still gets the UAC prompt needed for Program Files, and a standard user
+// updating their private copy is not asked for a password they do not have.
 func Launch(installerPath string) error {
 	if !strings.EqualFold(filepath.Ext(installerPath), ".exe") {
 		return fmt.Errorf("updater: %s is not an installer", filepath.Base(installerPath))
@@ -64,10 +72,6 @@ func Launch(installerPath string) error {
 		return fmt.Errorf("updater: resolving the installer path: %w", err)
 	}
 
-	verb, err := syscall.UTF16PtrFromString("runas")
-	if err != nil {
-		return fmt.Errorf("updater: preparing the installer command: %w", err)
-	}
 	file, err := syscall.UTF16PtrFromString(path)
 	if err != nil {
 		return fmt.Errorf("updater: preparing the installer command: %w", err)
@@ -87,7 +91,7 @@ func Launch(installerPath string) error {
 		defer windows.CoUninitialize()
 	}
 
-	if err := windows.ShellExecute(0, verb, file, nil, dir, windows.SW_SHOWNORMAL); err != nil {
+	if err := windows.ShellExecute(0, nil, file, nil, dir, windows.SW_SHOWNORMAL); err != nil {
 		if errors.Is(err, windows.ERROR_CANCELLED) {
 			// Declining the prompt is a decision, not a fault. PlayerOne stays
 			// open on the version it is already running.

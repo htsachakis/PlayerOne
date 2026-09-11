@@ -205,6 +205,10 @@ jobs:
 
             Both bundle mpv and ffmpeg. Windows 11 x64; nothing else to install.
 
+            The installer asks whether to install for everyone on the computer
+            or for your account alone. The second needs no administrator
+            rights and installs into `%LOCALAPPDATA%\Programs`.
+
             Settings, watch history and the playlist are stored in
             `%APPDATA%\PlayerOne` and are kept when you uninstall.
 

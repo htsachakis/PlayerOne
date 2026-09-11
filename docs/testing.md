@@ -287,12 +287,50 @@ Copy a video into a folder you cannot write to (`icacls <folder> /deny
 | # | Test | Expected |
 |---|---|---|
 | 15.1 | ⬜ Copy the whole `dist\PlayerOne-1.0.0-windows-amd64` folder elsewhere and run | Works — mpv comes from its own `bin\` |
-| 13.2 | ⬜ Run `build\bin\PlayerOne.exe` alone from another folder | Explains mpv is missing (expected: no `bin\` beside it) |
-| 13.3 | ⬜ `winget install NSIS.NSIS`, then `pwsh scripts/package.ps1 -Installer` | Installer builds |
-| 13.4 | ⬜ Run the installer | Installs, Start menu and desktop shortcuts appear |
-| 13.5 | ⬜ Launch the installed copy | Works; its own `bin\` is used |
-| 13.6 | ⬜ Uninstall | Removed; `%APPDATA%\PlayerOne` deliberately kept |
-| 13.7 | ⬜ Run the release workflow from the Actions tab | Green; both artifacts attached |
+| 15.2 | ⬜ Run `build\bin\PlayerOne.exe` alone from another folder | Explains mpv is missing (expected: no `bin\` beside it) |
+| 15.3 | ⬜ `winget install NSIS.NSIS`, then `pwsh scripts/package.ps1 -Installer` | Installer builds |
+| 15.4 | ⬜ Run the installer | Installs, Start menu and desktop shortcuts appear |
+| 15.5 | ⬜ Launch the installed copy | Works; its own `bin\` is used |
+| 15.6 | ⬜ Uninstall | Removed; `%APPDATA%\PlayerOne` deliberately kept |
+| 15.7 | ⬜ Run the release workflow from the Actions tab | Green; both artifacts attached |
+
+## 16. Who the installation is for
+
+Run these on a clean machine, or uninstall between rows — several of them are
+about what an *existing* installation does to the next one.
+
+| # | Test | Expected |
+|---|---|---|
+| 16.1 | ⬜ Run the installer on an administrator account | UAC prompt, then a page offering **anyone who uses this computer** and **me only**, with the first selected |
+| 16.2 | ⬜ Keep **anyone**, install | Lands in `C:\Program Files\PlayerOne\PlayerOne`; shortcuts on the desktop and Start menu |
+| 16.3 | ⬜ Check `HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall\PlayerOnePlayerOne` | Present, with `InstallLocation` pointing at that folder |
+| 16.4 | ⬜ Sign in as a different account | PlayerOne is in the Start menu and under **Open with** there too |
+| 16.5 | ⬜ Uninstall, then install again choosing **me only** | Lands in `%LOCALAPPDATA%\Programs\PlayerOne\PlayerOne`; the directory page shows that folder |
+| 16.6 | ⬜ **Apps ▸ Installed apps** after a *me only* install | PlayerOne listed; uninstalling from there removes it |
+| 16.7 | ⬜ Right-click an `.mkv` after a *me only* install | PlayerOne under **Open with**, and choosable in **Default apps** |
+| 16.8 | ⬜ Sign in as a different account after a *me only* install | PlayerOne is **absent** — no shortcut, no Open with entry |
+| 16.9 | ⬜ Run the installer on a standard (non-administrator) account | No password prompt; **anyone** is greyed out with the reason given; **me only** is selected |
+| 16.10 | ⬜ Install *me only* as a standard user, then play a file | Installs without elevation and plays |
+| 16.11 | ⬜ Run the installer again over an existing installation | Starts on the scope that copy used, and the folder it is in |
+| 16.12 | ⬜ Change the scope on that page and press Next | Warns that a second copy will be added; **No** returns to the page |
+| 16.13 | ⬜ Uninstall a *me only* copy | Gone from `HKCU`; a machine-wide copy, if one exists, is untouched |
+| 16.14 | ⬜ `installer.exe /S /CURRENTUSER` | Installs silently into AppData, no prompts |
+| 16.15 | ⬜ `installer.exe /S /ALLUSERS` as a standard user | Refuses rather than installing half an application (exit code 66) |
+| 16.16 | ⬜ **Update now** from a *me only* copy on a standard account | Updates in place, into the same AppData folder, with no password prompt |
+
+## 17. Installing while PlayerOne is open
+
+| # | Test | Expected |
+|---|---|---|
+| 17.1 | ⬜ Play a file, then run the installer over that copy | Pauses a few seconds, then asks — **no** file-in-use error, and nothing has been written yet |
+| 17.2 | ⬜ Click **Abort** | Installer stops; the installed copy still runs and still plays |
+| 17.3 | ⬜ Run it again, close PlayerOne yourself, click **Retry** | Carries on and installs |
+| 17.4 | ⬜ Run it again with PlayerOne playing, click **Ignore** | PlayerOne closes on its own, mpv goes with it, the install completes |
+| 17.5 | ⬜ Reopen after 17.4 and check **File ▸ Recent** | The position it was closed at was saved, not lost |
+| 17.6 | ⬜ Click **Retry** while PlayerOne is still open | Asks again rather than failing |
+| 17.7 | ⬜ Uninstall with PlayerOne open | Same three-way question; **Ignore** closes it and the folder is fully removed |
+| 17.8 | ⬜ **Update now** from inside PlayerOne | No question at all — PlayerOne is already quitting, and the installer waits it out |
+| 17.9 | ⬜ `installer.exe /S` with PlayerOne open and a modal dialog up | Exits **67** having installed nothing; PlayerOne is untouched |
 
 ---
 
