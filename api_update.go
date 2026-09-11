@@ -142,9 +142,11 @@ func (a *App) InstallUpdate() error {
 		return fmt.Errorf("release %s publishes no installer", release.Version)
 	}
 
-	dir, err := os.MkdirTemp("", "playerone-update-")
+	// Left behind deliberately when the installer starts: it is running from
+	// there. The next launch of PlayerOne sweeps it up.
+	dir, err := updater.NewDownloadDir()
 	if err != nil {
-		return fmt.Errorf("could not prepare a download folder: %v", err)
+		return fmt.Errorf("%v", err)
 	}
 
 	a.log.Info("app: downloading update %s (%d bytes)", release.Version, release.InstallerSize)
@@ -193,6 +195,37 @@ func (a *App) setLatestRelease(r *updater.Release) {
 	a.mu.Lock()
 	a.pendingUpdate = r
 	a.mu.Unlock()
+}
+
+// runUpdateDownloadCleanup removes what earlier updates left in the temporary
+// directory.
+//
+// Unconditional, unlike the update check: files already on disk should be
+// cleaned up whether or not this copy is still willing to look for updates, and
+// a development build can be started by an installer just as a release can.
+func (a *App) runUpdateDownloadCleanup() {
+	defer a.wg.Done()
+
+	// The same delay as the update check, for a different reason: when this
+	// copy was started from the installer's finish page, that installer is
+	// still on its way out, and its own file cannot be deleted until it has
+	// gone.
+	select {
+	case <-a.stopCh:
+		return
+	case <-time.After(startupUpdateDelay):
+	}
+
+	removed, err := updater.CleanDownloadDirs()
+	if removed > 0 {
+		a.log.Info("app: removed %d leftover update download(s)", removed)
+	}
+	if err != nil {
+		// Not a failure worth telling anyone about: the folder is almost
+		// certainly the installer that started this copy, and the next launch
+		// will get it.
+		a.log.Debug("app: %v", err)
+	}
 }
 
 // runStartupUpdateCheck checks once, shortly after launch, if it is due.

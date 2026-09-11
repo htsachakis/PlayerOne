@@ -267,9 +267,10 @@ func (a *App) initialiseEngine() {
 	// The interface has almost certainly already reported where the video goes.
 	a.applyPendingVideoLayout()
 
-	a.wg.Add(3)
+	a.wg.Add(4)
 	go a.runResumeSaver()
 	go a.runStartupUpdateCheck()
+	go a.runUpdateDownloadCleanup()
 	go a.runNotesWatcher()
 
 	a.log.Info("app: engine ready")

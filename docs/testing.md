@@ -270,6 +270,8 @@ Copy a video into a folder you cannot write to (`icacls <folder> /deny
 | 13.10 | ⬜ Turn update checking off, restart | No check; `settings.json` shows `checkForUpdates: false` |
 | 13.11 | ⬜ Run the **portable** copy on an old version | Offers the release page, not an install |
 | 13.12 | ⬜ First line of the log | Names the version, commit and build date |
+| 13.13 | ⬜ After 13.8, look in `%TEMP%` | The `playerone-update-…` folder is gone within ~5s of PlayerOne reopening; the log says it removed it |
+| 13.14 | ⬜ **Update now**, decline the UAC prompt, restart PlayerOne | The abandoned download is swept up too — nothing is left behind |
 
 ## 14. Open with
 

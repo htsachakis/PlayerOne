@@ -511,6 +511,11 @@ Worth knowing:
   this folder stale. It points you at the release page instead.
 - A build made with plain `go build` reports itself as a development build and
   is never offered an update, so a working tree cannot be replaced by a release.
+- The installer is downloaded to a folder of its own under `%TEMP%`
+  (`playerone-update-…`) and **deleted a few seconds after PlayerOne next
+  starts** — the process that launches an installer cannot tidy up after it,
+  since it has to quit for its own files to be replaced. The same sweep clears
+  a download that was abandoned, cancelled, or refused at the UAC prompt.
 
 The running version is shown in the window title, in **Info ▸ PlayerOne**, in
 the settings drawer, and on the first line of the log.
