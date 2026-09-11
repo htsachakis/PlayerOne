@@ -91,9 +91,26 @@ func NewWithFile(min Level, dir, name string) *Logger {
 	}
 
 	l.files = append(l.files, f)
-	l.out = log.New(io.MultiWriter(os.Stderr, f), "", log.LstdFlags|log.Lmicroseconds)
+
+	// The file first, and stderr behind a writer that cannot fail.
+	//
+	// A windowsgui build has no console, so os.Stderr is a dead handle and
+	// every write to it returns an error. io.MultiWriter abandons the writers
+	// after the one that failed, which left playerone.log empty in every
+	// packaged build - exactly the copies whose log anyone would ask for.
+	l.out = log.New(io.MultiWriter(f, optional{os.Stderr}), "", log.LstdFlags|log.Lmicroseconds)
 	l.Info("logging: writing to %s", path)
 	return l
+}
+
+// optional is a writer whose failures are nobody's business. It exists so that
+// a destination that may not be there - a console this process was not given -
+// cannot take the ones that are with it.
+type optional struct{ w io.Writer }
+
+func (o optional) Write(p []byte) (int, error) {
+	_, _ = o.w.Write(p)
+	return len(p), nil
 }
 
 // SetLevel changes the minimum level at runtime.
